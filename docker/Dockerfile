@@ -22,7 +22,7 @@ WORKDIR /app/backend
 COPY backend/pyproject.toml backend/uv.lock ./
 RUN uv sync --frozen --no-dev --no-install-project
 
-FROM python:3.12-slim-bookworm AS runtime
+FROM python:3.14-slim-bookworm AS runtime
 RUN useradd --create-home --uid 1000 stellar
 WORKDIR /app
 
