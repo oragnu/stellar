@@ -1,0 +1,54 @@
+# Primary self-host recipe — see docs/deployment/docker.md.
+#
+#   cp .env.example .env   # from repo root, then fill in secrets
+#   docker compose -f docker/docker-compose.yml up -d --build
+#
+# Put your own reverse proxy (Caddy/Traefik/nginx/NPM) in front of the
+# `app` service for TLS — this compose file does not terminate TLS itself.
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: ghcr.io/oragnu/stellar:latest
+    env_file:
+      - ../.env
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: stellar
+      POSTGRES_USER: stellar
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - stellar_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stellar"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # Optional, off by default — see docs/adr/0003-apscheduler-no-redis-by-default.md.
+  # Enable with: docker compose --profile redis up -d
+  # and set CACHE_BACKEND=redis / RATE_LIMIT_STORAGE_URI=redis://redis:6379/0 in .env.
+  redis:
+    image: redis:7-alpine
+    profiles: ["redis"]
+    restart: unless-stopped
+
+volumes:
+  stellar_db_data:
