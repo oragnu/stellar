@@ -1,0 +1,71 @@
+name: e2e
+
+# Runs the full stack (via docker compose) and exercises high-value smoke
+# flows with Playwright. Slower than the unit-test workflows, so it only
+# runs on pushes to main and nightly — see docs/plan.md § Testing Strategy.
+#
+# NOTE: this workflow is scaffolded ahead of the Playwright suite itself
+# (Phase 5 in docs/plan.md). It's safe to land now — with no spec files
+# under frontend/tests/e2e yet, `playwright test` exits 0 (no tests found)
+# — and will start exercising real flows once those specs are written.
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create test .env
+        run: |
+          cp .env.example .env
+          sed -i 's/^SECRET_KEY=.*/SECRET_KEY=e2e-test-secret-key/' .env
+          sed -i 's/^SECRET_ENCRYPTION_KEY=.*/SECRET_ENCRYPTION_KEY=e2e-test-encryption-key/' .env
+          sed -i 's/^SESSION_COOKIE_SECURE=.*/SESSION_COOKIE_SECURE=false/' .env
+          sed -i 's/^POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=e2e-test/' .env
+          sed -i 's|^DATABASE_URL=.*|DATABASE_URL=postgresql+asyncpg://stellar:e2e-test@db:5432/stellar|' .env
+
+      - name: Build and start stack
+        run: docker compose -f docker/docker-compose.yml up -d --build
+
+      - name: Wait for health check
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8000/api/v1/health; then exit 0; fi
+            sleep 2
+          done
+          echo "Stack did not become healthy in time" >&2
+          docker compose -f docker/docker-compose.yml logs
+          exit 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend deps + Playwright
+        working-directory: frontend
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Run Playwright e2e specs
+        working-directory: frontend
+        env:
+          BASE_URL: http://localhost:8000
+        run: npx playwright test
+
+      - name: Dump logs on failure
+        if: failure()
+        run: docker compose -f docker/docker-compose.yml logs
+
+      - name: Tear down
+        if: always()
+        run: docker compose -f docker/docker-compose.yml down -v
