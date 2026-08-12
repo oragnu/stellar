@@ -13,19 +13,19 @@ the full architecture, rationale, and roadmap.
 
 ## Status
 
-🚧 Pre-release, functional end-to-end. Phases 0-4 of the
-[roadmap](docs/plan.md#phased-roadmap) are done: auth + GitHub star sync,
-tags, notes, smart-filter ("predicate") builder, keyboard shortcuts, and an
-accessibility pass are all live. Phase 5 (packaging/CI/release) is
-in progress: `e2e.yml` is green (a `docker compose` env-file bug and a
-missing Playwright config were both found and fixed live in CI, not just
-reasoned about — see `docs/plan.md` § Phased Roadmap for the details and
-commit refs). What's left before a `v0.1.0` tag: list virtualization for
-very large star accounts, drag-and-drop reorder for tags/filters, a real
-`docker-publish.yml` run, hosting docs validated against an actual deploy,
-and resolving a CI gap where `backend-ci`/`codeql` have never run because
-the repo has no `main` branch yet (full detail in `docs/plan.md` § CI/CD &
-Hosting).
+✅ **`v0.1.0` [released](https://github.com/oragnu/stellar/releases/tag/v0.1.0)**,
+image published to [`ghcr.io/oragnu/stellar`](https://github.com/oragnu/stellar/pkgs/container/stellar).
+All 6 roadmap phases are done: auth + GitHub star sync, tags, notes,
+smart-filter ("predicate") builder, keyboard shortcuts, accessibility pass,
+and packaging/CI/release. `backend-ci`, `frontend-ci`, `e2e`, and `codeql`
+are all green on `main`; hosting was validated with a real Railway deploy
+(Postgres, a real GitHub OAuth App, a full login round trip syncing 788
+real starred repos — see `docs/plan.md` § Phased Roadmap for what that
+found and fixed). Known gaps carried forward, none blocking: list
+virtualization for very large star accounts, drag-and-drop reorder for
+tags/filters, a richer notes editor, and Fly.io/VPS recipes not yet
+exercised against a real deploy the way Railway was (full detail in
+`docs/plan.md` § Phased Roadmap).
 
 ## Stack
 
