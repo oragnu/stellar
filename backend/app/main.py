@@ -14,6 +14,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.types import Scope
 
 from app.api import auth, export, health, predicates, stars, tags
 from app.api import settings as settings_router
@@ -23,6 +25,34 @@ from app.core.rate_limit import build_limiter
 from app.jobs.scheduler import create_scheduler
 
 STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
+
+
+class SPAStaticFiles(StaticFiles):
+    """Serves the built React SPA, falling back to index.html for unknown
+    paths so React Router's client-side routes (e.g. /dashboard) resolve on
+    a hard refresh or a full-page redirect landing (e.g. the GitHub OAuth
+    callback), instead of surfacing StaticFiles' bare 404 for a path that
+    isn't a real static asset. Confirmed missing by the Railway deploy
+    validation in docs/plan.md Phase 5 — hard-refreshing /dashboard 404'd
+    until this was added.
+
+    Only falls back for genuinely unknown paths, not API ones: a typo'd or
+    retired /api/v1/* route should still 404 as JSON, not silently serve
+    the SPA's index.html (this mount only ever sees /api/v1/* paths that
+    every registered router already declined to match).
+    """
+
+    async def get_response(self, path: str, scope: Scope):
+        try:
+            return await super().get_response(path, scope)
+        except StarletteHTTPException as exc:
+            # `path` is an OS-normalized filesystem path (backslashes on
+            # Windows) — check the actual URL path instead, which is
+            # always forward-slash regardless of host OS.
+            is_api_path = scope["path"].lstrip("/").startswith("api/")
+            if exc.status_code == 404 and not is_api_path:
+                return await super().get_response("index.html", scope)
+            raise
 
 
 @asynccontextmanager
@@ -74,7 +104,7 @@ def create_app() -> FastAPI:
     # docker/Dockerfile) and is served for every non-API route so
     # client-side routing (React Router) works on a hard refresh.
     if STATIC_DIR.is_dir():
-        app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="spa")
+        app.mount("/", SPAStaticFiles(directory=STATIC_DIR, html=True), name="spa")
 
     return app
 
