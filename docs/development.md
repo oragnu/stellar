@@ -16,7 +16,7 @@ docker run -d --name stellar-db -p 5432:5432 \
   postgres:16-alpine
 ```
 
-(Or reuse `docker/docker-compose.yml`'s `db` service alone: `docker compose -f docker/docker-compose.yml up db`.)
+(Or reuse `docker/docker-compose.yml`'s `db` service alone: `docker compose --env-file .env -f docker/docker-compose.yml up db`.)
 
 ## 2. Backend
 
@@ -77,7 +77,7 @@ good but not infallible, especially around renamed columns/tables.
 ## Full stack via Docker (closest to production)
 
 ```bash
-docker compose -f docker/docker-compose.yml up -d --build
+docker compose --env-file .env -f docker/docker-compose.yml up -d --build
 ```
 
 See [`docs/deployment/docker.md`](deployment/docker.md) for details.

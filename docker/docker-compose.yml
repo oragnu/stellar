@@ -1,10 +1,21 @@
 # Primary self-host recipe — see docs/deployment/docker.md.
 #
 #   cp .env.example .env   # from repo root, then fill in secrets
-#   docker compose -f docker/docker-compose.yml up -d --build
+#   docker compose --env-file .env -f docker/docker-compose.yml up -d --build
 #
 # Put your own reverse proxy (Caddy/Traefik/nginx/NPM) in front of the
 # `app` service for TLS — this compose file does not terminate TLS itself.
+#
+# NOTE on --env-file: `-f docker/docker-compose.yml` puts the Compose
+# *project directory* at docker/, so Compose's own variable substitution
+# (e.g. ${POSTGRES_PASSWORD:-changeme} below) looks for docker/.env by
+# default — NOT the repo-root .env the command above just created. That's
+# separate from the `app` service's `env_file: ../.env`, which is resolved
+# relative to this file and finds the repo-root .env just fine. Without
+# --env-file .env (resolved relative to the CWD you run this from, i.e.
+# the repo root), the `db` service silently falls back to `changeme` while
+# `app` connects with whatever password is actually in .env — a permanent
+# "password authentication failed" loop. Always pass --env-file .env.
 
 services:
   app:

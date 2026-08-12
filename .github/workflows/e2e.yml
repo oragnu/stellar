@@ -32,7 +32,7 @@ jobs:
           sed -i 's|^DATABASE_URL=.*|DATABASE_URL=postgresql+asyncpg://stellar:e2e-test@db:5432/stellar|' .env
 
       - name: Build and start stack
-        run: docker compose -f docker/docker-compose.yml up -d --build
+        run: docker compose --env-file .env -f docker/docker-compose.yml up -d --build
 
       - name: Wait for health check
         run: |
@@ -41,7 +41,7 @@ jobs:
             sleep 2
           done
           echo "Stack did not become healthy in time" >&2
-          docker compose -f docker/docker-compose.yml logs
+          docker compose --env-file .env -f docker/docker-compose.yml logs
           exit 1
 
       - uses: actions/setup-node@v4
@@ -64,8 +64,8 @@ jobs:
 
       - name: Dump logs on failure
         if: failure()
-        run: docker compose -f docker/docker-compose.yml logs
+        run: docker compose --env-file .env -f docker/docker-compose.yml logs
 
       - name: Tear down
         if: always()
-        run: docker compose -f docker/docker-compose.yml down -v
+        run: docker compose --env-file .env -f docker/docker-compose.yml down -v

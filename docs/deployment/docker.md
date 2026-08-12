@@ -37,7 +37,7 @@ Edit `.env`:
 ## 3. Run
 
 ```bash
-docker compose -f docker/docker-compose.yml up -d --build
+docker compose --env-file .env -f docker/docker-compose.yml up -d --build
 ```
 
 This builds the image, starts Postgres (with a healthcheck gate so the app
@@ -48,7 +48,7 @@ first boot or on upgrades.
 Check it's healthy:
 
 ```bash
-docker compose -f docker/docker-compose.yml ps
+docker compose --env-file .env -f docker/docker-compose.yml ps
 curl http://localhost:8000/api/v1/health
 ```
 
@@ -69,7 +69,7 @@ and attached to the same network).
 
 ```bash
 git pull
-docker compose -f docker/docker-compose.yml up -d --build
+docker compose --env-file .env -f docker/docker-compose.yml up -d --build
 ```
 
 Migrations run automatically on the new container's start, same as first
@@ -80,7 +80,7 @@ source:
 
 ```bash
 docker pull ghcr.io/oragnu/stellar:latest
-docker compose -f docker/docker-compose.yml up -d
+docker compose --env-file .env -f docker/docker-compose.yml up -d
 ```
 
 ## 6. Backups
@@ -89,7 +89,7 @@ Postgres data lives in the named volume `stellar_db_data`. A simple manual
 backup:
 
 ```bash
-docker compose -f docker/docker-compose.yml exec db \
+docker compose --env-file .env -f docker/docker-compose.yml exec db \
   pg_dump -U stellar stellar > backup-$(date +%Y%m%d).sql
 ```
 
@@ -110,8 +110,16 @@ in `docker/docker-compose.yml` (under the `redis` Compose profile) and set
 
 - **OAuth callback mismatch**: double check the callback URL registered on
   GitHub exactly matches `${BASE_URL}/api/v1/auth/github/callback`.
-- **App can't reach the DB**: `docker compose logs db` — check
-  `POSTGRES_PASSWORD` matches between the `db` service env and your
-  `DATABASE_URL`.
+- **App can't reach the DB / "password authentication failed for user
+  stellar"**: `docker compose --env-file .env -f docker/docker-compose.yml
+  logs db`. The usual cause is running `docker compose` **without**
+  `--env-file .env`: because the compose file lives in `docker/`, Compose
+  treats `docker/` as the project directory and looks for `docker/.env` for
+  its own variable substitution (`${POSTGRES_PASSWORD:-changeme}`) — not the
+  repo-root `.env` these docs have you create. Without the flag, `db` silently
+  falls back to the `changeme` default while `app` (via `env_file: ../.env`)
+  connects with your real password, and every request fails auth. Always
+  invoke `docker compose` with `--env-file .env` from the repo root, as shown
+  throughout this doc.
 - **Stale frontend after an update**: rebuild with `--build` (not just `up
   -d`) — the SPA is baked into the image at build time.

@@ -40,7 +40,7 @@ and [`docs/adr/`](docs/adr/).
 git clone https://github.com/oragnu/stellar.git
 cd stellar
 cp .env.example .env   # fill in GITHUB_CLIENT_ID / GITHUB_CLIENT_SECRET, generate the two secret keys
-docker compose -f docker/docker-compose.yml up -d --build
+docker compose --env-file .env -f docker/docker-compose.yml up -d --build
 ```
 
 Visit `http://localhost:8000`. See [`docs/deployment/docker.md`](docs/deployment/docker.md)

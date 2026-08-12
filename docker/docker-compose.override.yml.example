@@ -3,7 +3,7 @@
 # backend source for iterative development against the built image.
 #
 #   cp docker/docker-compose.override.yml.example docker/docker-compose.override.yml
-#   docker compose -f docker/docker-compose.yml -f docker/docker-compose.override.yml up
+#   docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.override.yml up
 
 services:
   db:
