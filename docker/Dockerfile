@@ -10,7 +10,7 @@
 # packaging notes in docs/plan.md for why the original app's fork got this
 # wrong.
 
-FROM node:22-slim AS frontend-build
+FROM node:26-slim AS frontend-build
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm ci
