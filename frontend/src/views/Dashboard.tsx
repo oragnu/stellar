@@ -1,45 +1,45 @@
-import { Logo } from "@/components/ui/Logo";
 import { useCurrentUser } from "@/queries/useCurrentUser";
+import { Header } from "@/components/layout/Header";
+import { SearchBar } from "@/components/layout/SearchBar";
+import { Sidebar } from "@/components/layout/Sidebar";
+import { StarList } from "@/components/stars/StarList";
+import { StarDetail } from "@/components/stars/StarDetail";
+import { SettingsModal } from "@/components/settings/SettingsModal";
 
-/**
- * Placeholder shell — the full dashboard (sidebar, virtualized star list,
- * detail pane, predicate builder) is built out across Phases 1-3 of
- * docs/plan.md. This proves the authenticated route + API wiring works
- * end-to-end.
+/** Main app shell — CSS grid matching the original app's proportions:
+ * 72px header, 64px search bar, 280px sidebar, 400px star list, flexible
+ * detail pane. Phases 1-2 of docs/plan.md land here; the predicate builder
+ * (Phase 3) is the next major addition to this shell.
  */
 export function Dashboard() {
-  const { data: user } = useCurrentUser();
+  const { data: user, isLoading } = useCurrentUser();
+
+  if (isLoading || !user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-[var(--color-text-muted)]">
+        Loading…
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)]">
-      <header className="flex items-center justify-between border-b border-[var(--color-border)] px-6 py-4">
-        <Logo />
-        {user && (
-          <div className="flex items-center gap-3 text-sm text-[var(--color-text-muted)]">
-            {user.avatar_url && (
-              <img
-                src={user.avatar_url}
-                alt={user.github_login}
-                className="h-8 w-8 rounded-full"
-              />
-            )}
-            <span>{user.github_login}</span>
-          </div>
-        )}
-      </header>
-      <main className="flex flex-col items-center justify-center gap-3 px-6 py-24 text-center">
-        <h1 className="text-2xl font-bold text-[var(--color-text)]">
-          Your dashboard is under construction
-        </h1>
-        <p className="max-w-md text-[var(--color-text-muted)]">
-          Tags, notes, smart filters, and your starred repos will show up here
-          as Stellar's core features ship — see{" "}
-          <code className="rounded bg-[var(--color-bg-elevated)] px-1.5 py-0.5">
-            docs/plan.md
-          </code>{" "}
-          for the roadmap.
-        </p>
-      </main>
+    <div className="grid h-screen grid-cols-[280px_400px_1fr] grid-rows-[72px_56px_1fr] bg-[var(--color-bg)]">
+      <div className="col-span-3">
+        <Header user={user} />
+      </div>
+      <div className="col-span-2 col-start-2">
+        <SearchBar />
+      </div>
+      <div className="row-start-2 row-span-2">
+        <Sidebar />
+      </div>
+      <div className="col-start-2 row-start-3 border-r border-[var(--color-border)]">
+        <StarList />
+      </div>
+      <div className="col-start-3 row-start-3">
+        <StarDetail />
+      </div>
+      <SettingsModal />
     </div>
   );
 }
