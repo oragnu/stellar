@@ -36,6 +36,39 @@ npm run dev
 Open a GitHub issue. For security issues, please follow
 [`SECURITY.md`](SECURITY.md) instead of filing a public issue.
 
+## Branch protection & merging
+
+`main` is protected: no direct pushes (including from admins/owners — this
+is enforced, not just a convention), and every change lands via a PR.
+Required status checks before a PR can merge: `backend-ci`, `frontend-ci`,
+`e2e` (branch must also be up to date with `main` — GitHub will prompt to
+update if it's behind). `codeql` runs on every PR too but is report-only,
+not merge-blocking, since findings need triage rather than an instant fix.
+
+There's intentionally no enforced reviewer-approval count — for a
+single-maintainer project that's not a meaningful gate (GitHub never lets
+an author approve their own PR, and a bot/agent working under the
+maintainer's own account has no separate identity to review from anyway).
+The real gate is simpler: **only the repo owner merges.** Open a PR, let
+the required checks run, and either merge it yourself once you're happy
+with the diff, or ask for review in the PR before merging.
+
+## Cutting a release
+
+Releases go out as a **draft first, published deliberately** — a draft
+release doesn't create its git tag or fire `docker-publish.yml` until it's
+actually published, so nothing goes out to GHCR by accident:
+
+```bash
+gh release create vX.Y.Z --draft --notes-file notes.md   # no tag yet, nothing public
+# review the draft (GitHub UI, or ask whoever's driving to summarize it)
+gh release edit vX.Y.Z --draft=false                      # tag is created now;
+                                                            # this is what triggers docker-publish.yml
+```
+
+Bump `version` in both `backend/pyproject.toml` and `frontend/package.json`
+to match before tagging — `docker-publish.yml` doesn't check this for you.
+
 ## Code style
 
 - **Python**: `ruff` for linting + formatting, `mypy` for types, SQLAlchemy 2.0
