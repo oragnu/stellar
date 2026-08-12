@@ -4,7 +4,8 @@ export type SidebarView =
   | { type: "all" }
   | { type: "untagged" }
   | { type: "tag"; id: string; name: string }
-  | { type: "language"; value: string };
+  | { type: "language"; value: string }
+  | { type: "predicate"; id: string; name: string };
 
 interface UiState {
   selectedView: SidebarView;

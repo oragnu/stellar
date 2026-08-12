@@ -3,6 +3,7 @@ import { Star, Tag as TagIcon } from "lucide-react";
 import { useStars } from "@/queries/useStars";
 import { useUiStore } from "@/stores/uiStore";
 import { TagList } from "@/components/tags/TagList";
+import { PredicateList } from "@/components/predicates/PredicateList";
 
 /** Left nav: All Stars / Untagged smart views, user Tags, and derived
  * Language facets — mirrors the original app's sidebar sections. Counts
@@ -49,6 +50,10 @@ export function Sidebar() {
 
       <SidebarSection title="Tags">
         <TagList />
+      </SidebarSection>
+
+      <SidebarSection title="Smart Filters">
+        <PredicateList />
       </SidebarSection>
 
       {languages.length > 0 && (

@@ -18,6 +18,8 @@ export function useDashboardStars() {
         return { untagged: true };
       case "language":
         return { language: selectedView.value };
+      case "predicate":
+        return { predicateId: selectedView.id };
       default:
         return {};
     }
