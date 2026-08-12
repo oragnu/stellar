@@ -4,10 +4,12 @@ name: e2e
 # flows with Playwright. Slower than the unit-test workflows, so it only
 # runs on pushes to main and nightly — see docs/plan.md § Testing Strategy.
 #
-# NOTE: this workflow is scaffolded ahead of the Playwright suite itself
-# (Phase 5 in docs/plan.md). It's safe to land now — with no spec files
-# under frontend/tests/e2e yet, `playwright test` exits 0 (no tests found)
-# — and will start exercising real flows once those specs are written.
+# Specs live under frontend/tests/e2e (frontend/playwright.config.ts scopes
+# `testDir` there specifically) — frontend/tests/unit is Vitest's and the
+# two are not interchangeable. Currently just an API-health + landing-page
+# smoke check; deeper authenticated flows (tag/note/predicate CRUD) need a
+# real GitHub OAuth session and aren't practical to run headlessly in CI,
+# so they stay covered by the backend's own integration tests instead.
 
 on:
   push:
