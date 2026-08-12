@@ -35,16 +35,22 @@ export function NotesEditor({ repoId, initialNotes, autosaveEnabled }: NotesEdit
   return (
     <div>
       <div className="mb-1.5 flex items-center justify-between">
-        <label className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+        <label
+          htmlFor={`notes-${repoId}`}
+          className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]"
+        >
           Notes
         </label>
-        {autosaveEnabled && updateNotes.isSuccess && (
-          <span className="flex items-center gap-1 text-xs text-[var(--color-accent)]">
-            <Check className="h-3 w-3" /> Saved
-          </span>
-        )}
+        <span aria-live="polite" className="flex items-center gap-1 text-xs text-[var(--color-accent)]">
+          {autosaveEnabled && updateNotes.isSuccess && (
+            <>
+              <Check aria-hidden="true" className="h-3 w-3" /> Saved
+            </>
+          )}
+        </span>
       </div>
       <textarea
+        id={`notes-${repoId}`}
         value={value}
         onChange={handleChange}
         rows={6}

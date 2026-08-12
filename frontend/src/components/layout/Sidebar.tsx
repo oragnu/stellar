@@ -12,7 +12,7 @@ import { PredicateList } from "@/components/predicates/PredicateList";
  * server-side aggregation endpoint is needed.
  */
 export function Sidebar() {
-  const { data } = useStars();
+  const { data, isLoading } = useStars();
   const { selectedView, setSelectedView } = useUiStore();
 
   const stars = useMemo(() => data?.items ?? [], [data]);
@@ -30,19 +30,24 @@ export function Sidebar() {
   }, [stars]);
 
   return (
-    <aside className="flex h-full flex-col overflow-y-auto border-r border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-3">
-      <nav className="space-y-0.5">
+    <aside
+      aria-label="Star organization sidebar"
+      className="flex h-full flex-col overflow-y-auto border-r border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-3"
+    >
+      <nav aria-label="Smart views" className="space-y-0.5">
         <SidebarButton
-          icon={<Star className="h-4 w-4" />}
+          icon={<Star aria-hidden="true" className="h-4 w-4" />}
           label="All Stars"
           count={stars.length}
+          loading={isLoading}
           active={selectedView.type === "all"}
           onClick={() => setSelectedView({ type: "all" })}
         />
         <SidebarButton
-          icon={<TagIcon className="h-4 w-4" />}
+          icon={<TagIcon aria-hidden="true" className="h-4 w-4" />}
           label="Untagged"
           count={untaggedCount}
+          loading={isLoading}
           active={selectedView.type === "untagged"}
           onClick={() => setSelectedView({ type: "untagged" })}
         />
@@ -88,12 +93,14 @@ function SidebarButton({
   icon,
   label,
   count,
+  loading,
   active,
   onClick,
 }: {
   icon: React.ReactNode;
   label: string;
   count: number;
+  loading?: boolean;
   active: boolean;
   onClick: () => void;
 }) {
@@ -110,7 +117,7 @@ function SidebarButton({
         {icon}
         {label}
       </span>
-      <span className="opacity-70">{count}</span>
+      <span className="opacity-70">{loading ? "…" : count}</span>
     </button>
   );
 }

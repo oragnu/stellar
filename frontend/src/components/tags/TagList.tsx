@@ -83,14 +83,14 @@ export function TagList() {
                       onClick={() => startRename(tag.id, tag.name)}
                       className="focus-ring rounded p-0.5 hover:opacity-80"
                     >
-                      <Pencil className="h-3.5 w-3.5" />
+                      <Pencil aria-hidden="true" className="h-3.5 w-3.5" />
                     </button>
                     <button
                       aria-label={`Delete ${tag.name}`}
                       onClick={() => handleDelete(tag.id, tag.name)}
                       className="focus-ring rounded p-0.5 hover:opacity-80"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Trash2 aria-hidden="true" className="h-3.5 w-3.5" />
                     </button>
                   </span>
                 </>
@@ -101,11 +101,13 @@ export function TagList() {
       </ul>
 
       <form onSubmit={handleCreate} className="mt-1.5 flex items-center gap-1 px-2">
-        <Plus className="h-3.5 w-3.5 text-[var(--color-text-muted)]" />
+        <Plus aria-hidden="true" className="h-3.5 w-3.5 text-[var(--color-text-muted)]" />
         <input
+          id="stellar-new-tag-input"
           value={newTagName}
           onChange={(e) => setNewTagName(e.target.value)}
           placeholder="New tag"
+          aria-label="New tag name"
           className="focus-ring w-full rounded bg-transparent py-1 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]"
         />
       </form>

@@ -13,8 +13,13 @@ the full architecture, rationale, and roadmap.
 
 ## Status
 
-🚧 Early development. See the [phased roadmap](docs/plan.md#phased-roadmap)
-for where things stand.
+🚧 Pre-release, functional end-to-end. Phases 0-4 of the
+[roadmap](docs/plan.md#phased-roadmap) are done: auth + GitHub star sync,
+tags, notes, smart-filter ("predicate") builder, keyboard shortcuts, and an
+accessibility pass are all live. What's left before a `v0.1.0` tag: list
+virtualization for very large star accounts, drag-and-drop reorder for tags/
+filters, and validating the Docker/hosting recipes against a real deploy
+(Phase 5).
 
 ## Stack
 

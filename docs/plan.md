@@ -136,12 +136,16 @@ Direction: lean into the name pun — GitHub "stars" → **Stellar**, night-sky/
 
 ## Phased Roadmap
 
-0. **Scaffolding** — repo skeleton, FastAPI health endpoint, Vite+React+TS+Tailwind skeleton w/ placeholder landing page, Postgres via compose, empty Alembic baseline, pre-commit, base CI green, ADR 0001.
-1. **Auth + Sync** — `users`/`sessions`, GitHub OAuth end-to-end, `star_cache` + sync service, session/CSRF middleware, login/callback views, unstyled star list proving the pipe works.
-2. **Tags + Notes** — `stars`/`tags`/`star_tag`, tag CRUD/reorder/bulk-tag APIs + UI, notes editor + autosave, autotagger, janitor, README fetch+sanitize, list virtualization introduced here.
-3. **Predicates** — `predicates` model, `predicate_engine.py`, builder modal + recursive group/rule components, live preview, sidebar integration.
-4. **Polish, Docs, Landing/Branding** — keyboard shortcuts, settings modal (export/revoke/delete wired), language facets, empty/loading states, landing page + branding applied, `docs/` filled out, accessibility pass.
-5. **Packaging, CI/CD, Release** — finalize Dockerfile/entrypoint/compose, `docker-publish.yml`, Playwright e2e in CI, hosting docs validated against a real deploy, CodeQL + Dependabot on, cut `v0.1.0`.
+Status key: ✅ done · 🚧 in progress · ⬜ not started.
+
+0. ✅ **Scaffolding** — repo skeleton, FastAPI health endpoint, Vite+React+TS+Tailwind skeleton w/ placeholder landing page, Postgres via compose, empty Alembic baseline, pre-commit, base CI green, ADR 0001.
+1. ✅ **Auth + Sync** — `users`/`sessions`, GitHub OAuth end-to-end, `star_cache` + sync service, session/CSRF middleware, login/callback views, unstyled star list proving the pipe works. (Landed with a full dashboard, not just an unstyled list — see the Phase 1-2 commit.)
+2. ✅ **Tags + Notes** — `stars`/`tags`/`star_tag`, tag CRUD/reorder/bulk-tag APIs + UI, notes editor + autosave, autotagger, janitor, README fetch+sanitize. List virtualization deferred (see below) — the plain-rendered list is fine at current scale but hasn't been exercised against a multi-thousand-star account yet.
+3. ✅ **Predicates** — `predicates` model, `predicate_engine.py`, builder modal + recursive group/rule components, live preview, sidebar integration.
+4. ✅ **Polish, Docs, Landing/Branding** — keyboard shortcuts (`/`, `j`/`k`, `t`, `Escape`), settings modal (export/revoke/delete wired), language facets, empty/loading states, landing page + branding applied, `docs/` filled out, accessibility pass (landmarks, `aria-hidden`/`aria-label`/`aria-live` sweep, contrast-checked palette, keyboard-navigable throughout).
+5. ⬜ **Packaging, CI/CD, Release** — finalize Dockerfile/entrypoint/compose, `docker-publish.yml`, Playwright e2e in CI, hosting docs validated against a real deploy, CodeQL + Dependabot on (Dependabot already live and pruned — see repo PR history), cut `v0.1.0`.
+
+**Known gaps carried forward** (each called out at the point they were deferred, not silently dropped): list virtualization (`@tanstack/react-virtual`) for tags/predicates/star list at large scale; drag-and-drop reorder for tags and saved filters (rename/delete/create work today, manual reordering doesn't); a richer CodeMirror-based notes editor (currently a plain textarea with debounced autosave).
 
 ## Security Checklist
 

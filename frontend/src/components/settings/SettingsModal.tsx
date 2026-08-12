@@ -63,19 +63,21 @@ export function SettingsModal() {
             disabled={runAutotag.isPending}
             className="focus-ring flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm text-[var(--color-text)] hover:bg-[var(--color-bg-elevated-2)] disabled:opacity-50"
           >
-            <Sparkles className="h-4 w-4 text-[var(--color-accent)]" />
-            {runAutotag.isPending ? "Auto-tagging…" : "Run auto-tagger now"}
-            {runAutotag.isSuccess && (
-              <span className="ml-auto text-xs text-[var(--color-text-muted)]">
-                +{runAutotag.data?.applied_count ?? 0} tagged
-              </span>
-            )}
+            <Sparkles aria-hidden="true" className="h-4 w-4 text-[var(--color-accent)]" />
+            <span aria-live="polite">
+              {runAutotag.isPending ? "Auto-tagging…" : "Run auto-tagger now"}
+              {runAutotag.isSuccess && (
+                <span className="ml-2 text-xs text-[var(--color-text-muted)]">
+                  +{runAutotag.data?.applied_count ?? 0} tagged
+                </span>
+              )}
+            </span>
           </button>
           <a
             href="/api/v1/export"
             className="focus-ring flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-[var(--color-text)] hover:bg-[var(--color-bg-elevated-2)]"
           >
-            <Download className="h-4 w-4" /> Export stars as JSON
+            <Download aria-hidden="true" className="h-4 w-4" /> Export stars as JSON
           </a>
         </div>
 
@@ -85,8 +87,8 @@ export function SettingsModal() {
             disabled={deleteAccount.isPending}
             className="focus-ring flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-[var(--color-danger)] hover:bg-[var(--color-bg-elevated-2)] disabled:opacity-50"
           >
-            <Trash2 className="h-4 w-4" />
-            {deleteAccount.isPending ? "Deleting…" : "Delete account"}
+            <Trash2 aria-hidden="true" className="h-4 w-4" />
+            <span aria-live="polite">{deleteAccount.isPending ? "Deleting…" : "Delete account"}</span>
           </button>
         </div>
       </div>

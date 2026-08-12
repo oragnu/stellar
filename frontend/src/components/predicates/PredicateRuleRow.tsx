@@ -67,7 +67,7 @@ export function PredicateRuleRow({ rule, onChange, onRemove }: PredicateRuleRowP
         aria-label="Remove rule"
         className="focus-ring ml-auto rounded p-1 text-[var(--color-text-muted)] hover:text-[var(--color-danger)]"
       >
-        <X className="h-3.5 w-3.5" />
+        <X aria-hidden="true" className="h-3.5 w-3.5" />
       </button>
     </div>
   );

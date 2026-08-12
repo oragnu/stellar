@@ -24,15 +24,18 @@ export function UserMenu({ user }: { user: CurrentUser }) {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
-        <button className="focus-ring flex items-center gap-2 rounded-full">
+        <button
+          aria-label={`Account menu for ${user.github_login}`}
+          className="focus-ring flex items-center gap-2 rounded-full"
+        >
           {user.avatar_url ? (
             <img
               src={user.avatar_url}
-              alt={user.github_login}
+              alt=""
               className="h-8 w-8 rounded-full"
             />
           ) : (
-            <div className="h-8 w-8 rounded-full bg-[var(--color-primary)]" />
+            <div aria-hidden="true" className="h-8 w-8 rounded-full bg-[var(--color-primary)]" />
           )}
         </button>
       </DropdownMenu.Trigger>
@@ -49,7 +52,7 @@ export function UserMenu({ user }: { user: CurrentUser }) {
             onSelect={openSettingsModal}
             className="focus-ring flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm text-[var(--color-text)] outline-none hover:bg-[var(--color-bg-elevated-2)]"
           >
-            <Settings className="h-4 w-4" /> Settings
+            <Settings aria-hidden="true" className="h-4 w-4" /> Settings
           </DropdownMenu.Item>
           <DropdownMenu.Item asChild>
             <a
@@ -58,14 +61,14 @@ export function UserMenu({ user }: { user: CurrentUser }) {
               rel="noreferrer"
               className="focus-ring flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm text-[var(--color-text)] outline-none hover:bg-[var(--color-bg-elevated-2)]"
             >
-              <Github className="h-4 w-4" /> GitHub profile
+              <Github aria-hidden="true" className="h-4 w-4" /> GitHub profile
             </a>
           </DropdownMenu.Item>
           <DropdownMenu.Item
             onSelect={handleLogout}
             className="focus-ring flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm text-[var(--color-danger)] outline-none hover:bg-[var(--color-bg-elevated-2)]"
           >
-            <LogOut className="h-4 w-4" /> Sign out
+            <LogOut aria-hidden="true" className="h-4 w-4" /> Sign out
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Portal>

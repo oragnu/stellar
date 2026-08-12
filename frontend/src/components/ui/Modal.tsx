@@ -32,7 +32,7 @@ export function Modal({ open, onOpenChange, title, children }: ModalProps) {
                 aria-label="Close"
                 className="focus-ring rounded p-1 text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
               >
-                <X className="h-5 w-5" />
+                <X aria-hidden="true" className="h-5 w-5" />
               </button>
             </Dialog.Close>
           </div>

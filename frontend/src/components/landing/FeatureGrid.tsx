@@ -80,7 +80,7 @@ export function FeatureGrid() {
               key={title}
               className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-5 transition-colors hover:border-[var(--color-primary)]"
             >
-              <Icon className="h-6 w-6 text-[var(--color-accent)]" strokeWidth={1.75} />
+              <Icon aria-hidden="true" className="h-6 w-6 text-[var(--color-accent)]" strokeWidth={1.75} />
               <h3 className="mt-3 font-semibold text-[var(--color-text)]">{title}</h3>
               <p className="mt-1.5 text-sm text-[var(--color-text-muted)]">{description}</p>
             </div>

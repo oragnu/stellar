@@ -50,7 +50,7 @@ export function TagChip({ name, onRemove, active, onClick }: TagChipProps) {
           aria-label={`Remove tag ${name}`}
           className="rounded-full hover:opacity-70"
         >
-          <X className="h-3 w-3" />
+          <X aria-hidden="true" className="h-3 w-3" />
         </button>
       )}
     </span>

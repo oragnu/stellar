@@ -72,7 +72,7 @@ export function PredicateGroupBox({ group, onChange, onRemove, depth = 0 }: Pred
             aria-label="Remove group"
             className="focus-ring ml-auto rounded p-1 text-[var(--color-text-muted)] hover:text-[var(--color-danger)]"
           >
-            <Trash2 className="h-3.5 w-3.5" />
+            <Trash2 aria-hidden="true" className="h-3.5 w-3.5" />
           </button>
         )}
       </div>
@@ -108,13 +108,13 @@ export function PredicateGroupBox({ group, onChange, onRemove, depth = 0 }: Pred
           onClick={addRule}
           className="focus-ring flex items-center gap-1 text-xs font-medium text-[var(--color-accent)] hover:underline"
         >
-          <Plus className="h-3 w-3" /> Add rule
+          <Plus aria-hidden="true" className="h-3 w-3" /> Add rule
         </button>
         <button
           onClick={addGroup}
           className="focus-ring flex items-center gap-1 text-xs font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
         >
-          <Plus className="h-3 w-3" /> Add group
+          <Plus aria-hidden="true" className="h-3 w-3" /> Add group
         </button>
       </div>
     </div>

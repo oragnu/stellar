@@ -55,14 +55,14 @@ export function PredicateList() {
                   onClick={() => setModalState({ editing: predicate })}
                   className="focus-ring rounded p-0.5 hover:opacity-80"
                 >
-                  <Pencil className="h-3.5 w-3.5" />
+                  <Pencil aria-hidden="true" className="h-3.5 w-3.5" />
                 </button>
                 <button
                   aria-label={`Delete ${predicate.name}`}
                   onClick={() => handleDelete(predicate)}
                   className="focus-ring rounded p-0.5 hover:opacity-80"
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
+                  <Trash2 aria-hidden="true" className="h-3.5 w-3.5" />
                 </button>
               </span>
             </li>
@@ -74,7 +74,7 @@ export function PredicateList() {
         onClick={() => setModalState({ editing: null })}
         className="focus-ring mt-1.5 flex items-center gap-1.5 px-2 py-1 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
       >
-        <Plus className="h-3.5 w-3.5" /> New smart filter
+        <Plus aria-hidden="true" className="h-3.5 w-3.5" /> New smart filter
       </button>
 
       <PredicateBuilderModal

@@ -68,7 +68,7 @@ function StarDetailContent({ star }: { star: StarRecord }) {
           rel="noreferrer"
           className="focus-ring flex shrink-0 items-center gap-1 rounded-md border border-[var(--color-border)] px-2.5 py-1.5 text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
         >
-          <ExternalLink className="h-3.5 w-3.5" /> GitHub
+          <ExternalLink aria-hidden="true" className="h-3.5 w-3.5" /> GitHub
         </a>
       </div>
 
@@ -76,6 +76,7 @@ function StarDetailContent({ star }: { star: StarRecord }) {
         readOnly
         value={`git clone ${star.url}.git`}
         onFocus={(e) => e.target.select()}
+        aria-label="Git clone URL"
         className="focus-ring mt-3 w-full rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-1.5 font-mono text-xs text-[var(--color-text-muted)]"
       />
 
@@ -86,12 +87,13 @@ function StarDetailContent({ star }: { star: StarRecord }) {
           ))}
         </div>
         <form onSubmit={addTag} className="flex items-center gap-1">
-          <Plus className="h-3.5 w-3.5 text-[var(--color-text-muted)]" />
+          <Plus aria-hidden="true" className="h-3.5 w-3.5 text-[var(--color-text-muted)]" />
           <input
             list="all-tag-names"
             value={tagInput}
             onChange={(e) => setTagInput(e.target.value)}
             placeholder="Add a tag…"
+            aria-label="Add a tag to this repo"
             className="focus-ring rounded bg-transparent text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]"
           />
           <datalist id="all-tag-names">

@@ -35,7 +35,14 @@ export function StarListItem({ star, active, onClick }: StarListItemProps) {
         >
           {star.name_with_owner}
         </span>
-        {star.is_archived && <Archive className="h-3.5 w-3.5 shrink-0 text-[var(--color-text-muted)]" />}
+        {star.is_archived && (
+          <span title="Archived">
+            <Archive
+              aria-label="Archived"
+              className="h-3.5 w-3.5 shrink-0 text-[var(--color-text-muted)]"
+            />
+          </span>
+        )}
       </div>
       {star.description && (
         <p className="mt-0.5 line-clamp-2 text-sm text-[var(--color-text-muted)]">
@@ -44,11 +51,11 @@ export function StarListItem({ star, active, onClick }: StarListItemProps) {
       )}
       <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--color-text-muted)]">
         {star.language && <span>{star.language}</span>}
-        <span className="flex items-center gap-1">
-          <Star className="h-3 w-3" /> {star.stargazer_count.toLocaleString()}
+        <span className="flex items-center gap-1" aria-label={`${star.stargazer_count.toLocaleString()} stars`}>
+          <Star aria-hidden="true" className="h-3 w-3" /> {star.stargazer_count.toLocaleString()}
         </span>
-        <span className="flex items-center gap-1">
-          <GitFork className="h-3 w-3" /> {star.fork_count.toLocaleString()}
+        <span className="flex items-center gap-1" aria-label={`${star.fork_count.toLocaleString()} forks`}>
+          <GitFork aria-hidden="true" className="h-3 w-3" /> {star.fork_count.toLocaleString()}
         </span>
         {relativeTime(star.pushed_at) && <span>pushed {relativeTime(star.pushed_at)}</span>}
       </div>
