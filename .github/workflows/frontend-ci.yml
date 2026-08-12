@@ -1,10 +1,12 @@
 name: frontend-ci
 
 on:
+  # No path filter here (unlike push, below): this is a required status
+  # check on main's branch protection, so it must run on every PR
+  # regardless of what changed — a path-filtered pull_request trigger
+  # would mean PRs that don't touch frontend/ never get this check
+  # reported at all, leaving them permanently unmergeable.
   pull_request:
-    paths:
-      - "frontend/**"
-      - ".github/workflows/frontend-ci.yml"
   push:
     branches: [main]
     paths:

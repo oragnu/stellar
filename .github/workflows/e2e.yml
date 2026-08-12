@@ -1,8 +1,12 @@
 name: e2e
 
 # Runs the full stack (via docker compose) and exercises high-value smoke
-# flows with Playwright. Slower than the unit-test workflows, so it only
-# runs on pushes to main and nightly — see docs/plan.md § Testing Strategy.
+# flows with Playwright. Slower than the unit-test workflows, but it's a
+# required status check on main's branch protection, so it also runs on
+# every PR (no path filter, same reasoning as backend-ci/frontend-ci — a
+# required check that can't fire leaves the PR permanently unmergeable),
+# plus nightly to catch drift between PRs — see docs/plan.md § Testing
+# Strategy.
 #
 # Specs live under frontend/tests/e2e (frontend/playwright.config.ts scopes
 # `testDir` there specifically) — frontend/tests/unit is Vitest's and the
@@ -12,6 +16,7 @@ name: e2e
 # so they stay covered by the backend's own integration tests instead.
 
 on:
+  pull_request:
   push:
     branches: [main]
   schedule:

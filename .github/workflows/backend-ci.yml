@@ -1,10 +1,12 @@
 name: backend-ci
 
 on:
+  # No path filter here (unlike push, below): this is a required status
+  # check on main's branch protection, so it must run on every PR
+  # regardless of what changed — a path-filtered pull_request trigger
+  # would mean PRs that don't touch backend/ never get this check
+  # reported at all, leaving them permanently unmergeable.
   pull_request:
-    paths:
-      - "backend/**"
-      - ".github/workflows/backend-ci.yml"
   push:
     branches: [main]
     paths:
