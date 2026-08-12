@@ -16,10 +16,16 @@ the full architecture, rationale, and roadmap.
 🚧 Pre-release, functional end-to-end. Phases 0-4 of the
 [roadmap](docs/plan.md#phased-roadmap) are done: auth + GitHub star sync,
 tags, notes, smart-filter ("predicate") builder, keyboard shortcuts, and an
-accessibility pass are all live. What's left before a `v0.1.0` tag: list
-virtualization for very large star accounts, drag-and-drop reorder for tags/
-filters, and validating the Docker/hosting recipes against a real deploy
-(Phase 5).
+accessibility pass are all live. Phase 5 (packaging/CI/release) is
+in progress: `e2e.yml` is green (a `docker compose` env-file bug and a
+missing Playwright config were both found and fixed live in CI, not just
+reasoned about — see `docs/plan.md` § Phased Roadmap for the details and
+commit refs). What's left before a `v0.1.0` tag: list virtualization for
+very large star accounts, drag-and-drop reorder for tags/filters, a real
+`docker-publish.yml` run, hosting docs validated against an actual deploy,
+and resolving a CI gap where `backend-ci`/`codeql` have never run because
+the repo has no `main` branch yet (full detail in `docs/plan.md` § CI/CD &
+Hosting).
 
 ## Stack
 

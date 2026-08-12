@@ -58,10 +58,20 @@ uv run mypy app
 
 # Frontend
 cd frontend
-npm run test           # vitest
+npm run test           # vitest — unit tests, tests/unit/
 npm run lint           # eslint
 npx tsc --noEmit
+
+# E2E (needs the full stack up first — see "Full stack via Docker" below)
+cd frontend
+npx playwright install --with-deps chromium   # first time only
+BASE_URL=http://localhost:8000 npx playwright test   # tests/e2e/
 ```
+
+`tests/unit` (Vitest) and `tests/e2e` (Playwright) are deliberately
+separate runners/directories — `frontend/playwright.config.ts` scopes
+Playwright to `tests/e2e` specifically, since without that it also picks
+up (and crashes on) the Vitest specs.
 
 ## Database migrations
 
