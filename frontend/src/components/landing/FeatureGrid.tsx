@@ -4,11 +4,11 @@ import {
   Filter,
   Sparkles,
   Search,
-  Github,
   RefreshCw,
   Download,
   type LucideIcon,
 } from "lucide-react";
+import { GithubIcon } from "@/components/ui/GithubIcon";
 
 interface Feature {
   icon: LucideIcon;
@@ -44,7 +44,7 @@ const FEATURES: Feature[] = [
     description: "Keyboard-driven, instant search across thousands of stars.",
   },
   {
-    icon: Github,
+    icon: GithubIcon,
     title: "GitHub OAuth",
     description: "Sign in with GitHub — no separate account, no separate password.",
   },

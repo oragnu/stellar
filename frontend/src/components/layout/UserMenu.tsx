@@ -1,10 +1,11 @@
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { Github, LogOut, Settings } from "lucide-react";
+import { LogOut, Settings } from "lucide-react";
 import type { CurrentUser } from "@/queries/useCurrentUser";
 import { useLogout } from "@/queries/useSettings";
 import { useUiStore } from "@/stores/uiStore";
+import { GithubIcon } from "@/components/ui/GithubIcon";
 
 export function UserMenu({ user }: { user: CurrentUser }) {
   const logout = useLogout();
@@ -61,7 +62,7 @@ export function UserMenu({ user }: { user: CurrentUser }) {
               rel="noreferrer"
               className="focus-ring flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm text-[var(--color-text)] outline-none hover:bg-[var(--color-bg-elevated-2)]"
             >
-              <Github aria-hidden="true" className="h-4 w-4" /> GitHub profile
+              <GithubIcon aria-hidden="true" className="h-4 w-4" /> GitHub profile
             </a>
           </DropdownMenu.Item>
           <DropdownMenu.Item
