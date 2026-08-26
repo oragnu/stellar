@@ -104,6 +104,7 @@ function StarDetailContent({ star }: { star: StarRecord }) {
 
       <div className="mt-5">
         <NotesEditor
+          key={star.repo_id}
           repoId={star.repo_id}
           initialNotes={star.notes}
           autosaveEnabled={user?.autosave_notes ?? true}

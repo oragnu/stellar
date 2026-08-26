@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Check } from "lucide-react";
 import { useUpdateStarNotes } from "@/queries/useStars";
 import { useDebouncedCallback } from "@/lib/useDebouncedCallback";
@@ -17,11 +17,15 @@ interface NotesEditorProps {
  */
 export function NotesEditor({ repoId, initialNotes, autosaveEnabled }: NotesEditorProps) {
   const [value, setValue] = useState(initialNotes ?? "");
-  const updateNotes = useUpdateStarNotes();
-
-  useEffect(() => {
+  // Track the notes we last synced from so a fresh `initialNotes` (e.g. after a
+  // refetch) is picked up without an effect — switching repos entirely is handled
+  // by the parent remounting this component via `key`.
+  const [syncedNotes, setSyncedNotes] = useState(initialNotes);
+  if (initialNotes !== syncedNotes) {
+    setSyncedNotes(initialNotes);
     setValue(initialNotes ?? "");
-  }, [repoId, initialNotes]);
+  }
+  const updateNotes = useUpdateStarNotes();
 
   const debouncedSave = useDebouncedCallback((notes: string) => {
     updateNotes.mutate({ repoId, notes });
