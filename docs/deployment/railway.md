@@ -69,7 +69,27 @@ Railway dashboard.
    source is connected — migrations run automatically at container start,
    same as every other recipe. If a push doesn't trigger a redeploy on its
    own, `railway service source connect --repo <owner>/<repo> --branch main --service <name>`
-   re-establishes the trigger.
+   re-establishes the trigger — **but that command reports success even
+   when it hasn't actually fixed anything.** Confirmed live: it happily
+   echoed back `disconnected: false` with the repo and branch both
+   correct, while a direct GraphQL check (`railway api`, querying
+   `deploymentTriggers` for the project/environment/service) still came
+   back with zero edges — no trigger existed. Root cause was that
+   Railway's GitHub App had been fully *uninstalled* from the GitHub
+   account, not just disconnected from this project; the service's
+   `source` field still showed the repo as connected, which is what makes
+   this confusing. It's also easy to miss on GitHub's side: the app shows
+   up under **Settings → Authorized GitHub Apps** (an OAuth-level record
+   that survives an uninstall, with no **Configure** option — only
+   **Revoke**), not under **Installed GitHub Apps**, where you'd normally
+   go looking to fix it. The actual fix is reinstalling the app at
+   [github.com/apps/railway-app](https://github.com/apps/railway-app),
+   granting it access to the repo, and *then* re-running the
+   `source connect` command — only after that does a `deploymentTriggers`
+   query show a real record. One upside: re-running `source connect` once
+   the app is genuinely reinstalled also kicks off an immediate deploy of
+   the connected branch's current head as a side effect, so there's no
+   separate "catch production back up" step needed afterward.
 8. Attach a custom domain under the service's **Settings → Domains** if
    desired; Railway handles TLS for both its generated and custom domains.
 
