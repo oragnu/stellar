@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Python 3.12+ and [`uv`](https://docs.astral.sh/uv/)
+- Python 3.14 (3.11+ supported) and [`uv`](https://docs.astral.sh/uv/)
 - Node.js 22+ and npm
 - PostgreSQL 16 (via Docker is easiest — see below — or a local install)
 - A [GitHub OAuth App](https://github.com/settings/developers) — set the
