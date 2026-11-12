@@ -6,7 +6,13 @@ updates:
       interval: "weekly"
     groups:
       backend-minor-patch:
+        applies-to: version-updates
         update-types: ["minor", "patch"]
+      # Security fixes (including transitive deps) arrive as one PR instead
+      # of one per advisory.
+      backend-security:
+        applies-to: security-updates
+        patterns: ["*"]
 
   - package-ecosystem: "npm"
     directory: "/frontend"
@@ -14,14 +20,40 @@ updates:
       interval: "weekly"
     groups:
       frontend-minor-patch:
+        applies-to: version-updates
         update-types: ["minor", "patch"]
+      # Transitive security fixes (e.g. undici, source-map-js) are not covered
+      # by the version-updates group above; batch them into one PR.
+      frontend-security:
+        applies-to: security-updates
+        patterns: ["*"]
+      # Keep vitest and its @vitest/* packages in lockstep so they never land
+      # as separate, conflicting PRs.
+      vitest:
+        applies-to: version-updates
+        patterns: ["vitest", "@vitest/*"]
+    ignore:
+      # typescript-eslint only supports typescript <6.1.0, so TS 7 cannot be
+      # installed yet. Remove once typescript-eslint supports TS 7.
+      - dependency-name: "typescript"
+        versions: [">=7.0.0"]
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      github-actions:
+        patterns: ["*"]
 
   - package-ecosystem: "docker"
     directory: "/docker"
     schedule:
       interval: "weekly"
+    ignore:
+      # Dependabot only bumps the runtime stage's python image, not the
+      # python-deps stage's uv image, so the venv is built for a different
+      # interpreter and the container fails to start. Python minor upgrades
+      # must be done manually across both stages and backend CI.
+      - dependency-name: "python"
+        update-types: ["version-update:semver-minor"]
