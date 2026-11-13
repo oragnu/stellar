@@ -1,10 +1,10 @@
 """Shared pytest fixtures.
 
-Tests run against an in-memory-per-connection SQLite database via
-aiosqlite for speed and zero external dependencies in CI's fast unit-test
-job; the dedicated backend-ci Postgres service container additionally runs
-the same suite against real Postgres to catch dialect differences (see
-.github/workflows/backend-ci.yml).
+Tests run against an in-memory SQLite database via aiosqlite, for speed
+and zero external dependencies. The fixtures below force this even when
+DATABASE_URL points at Postgres, so pytest never runs against Postgres.
+In backend-ci the Postgres service container is used only for
+`alembic upgrade head`, which checks that migrations apply on Postgres.
 """
 
 import asyncio

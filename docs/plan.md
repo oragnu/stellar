@@ -23,12 +23,12 @@ The Docker fork (`sruckh/astral`) revealed anti-patterns to fix in Stellar: migr
 - **Backend**: Python 3.14, FastAPI, Pydantic v2 (schemas separate from ORM models), SQLAlchemy 2.0 async (`Mapped[]`/`mapped_column()` style) + `asyncpg`, Alembic migrations, `uv` for dependency management, httpx (async) for GitHub REST+GraphQL, structlog, APScheduler (in-process `AsyncIOScheduler`, no Redis required) for periodic star-sync + cache/session eviction.
 - **Auth**: GitHub OAuth only. Server-side session table (`sessions`) + signed httpOnly `SameSite=Lax` cookie (via `itsdangerous`) — chosen over in-cookie JWT specifically because instant revocation (logout, delete-account) matters when a session guards an encrypted GitHub token. Double-submit-cookie CSRF on mutating routes. GitHub access token encrypted at rest with Fernet (`cryptography`).
 - **Database**: PostgreSQL 16 primary (JSONB for `predicates.body`, proper indexing, room to grow). SQLite kept plausible (dialect-agnostic column types, no Postgres-only operators in app logic) but **not** CI-gated or docs-promised in v1 — documented as "may work, unsupported" so it doesn't slow down v1 without foreclosing it later.
-- **Cache**: star-list cache stored in Postgres (`star_cache` table, JSONB payload + TTL) behind a small `CacheBackend` protocol with `memory`/`db`/`redis` implementations, `db` default — Redis is an explicit opt-in upgrade path (multi-instance cache sharing, multi-instance rate-limit storage), never required for a normal self-host.
-- **Rate limiting**: `slowapi` for inbound API protection (stricter on `/auth/*`, `/stars/sync`); outbound GitHub calls respect rate-limit headers with per-user asyncio locks to prevent duplicate concurrent syncs.
-- **Frontend**: React 18 + TypeScript + Vite, **TanStack Query** for server state (stars/tags/predicates — replaces most of the original's Vuex data-fetching role), **Zustand** for local UI state (selected sidebar view, modal open/closed, search query), **React Router v7** (data router, auth-guarded routes), **Tailwind CSS v4**, **shadcn/ui + Radix primitives** for accessible modals/dropdowns/toggles, **dnd-kit** for tag reorder + drag-star-onto-tag, **@tanstack/react-virtual** for the virtualized star list, **@uiw/react-codemirror** (CodeMirror 6) for the notes markdown editor, **lucide-react** icons, `markdown-it` + `dompurify` for note-preview rendering (GitHub already returns rendered HTML for READMEs — sanitize with `dompurify` before injecting).
+- **Cache**: star-list cache stored in Postgres (`star_cache` table, JSONB payload + TTL) behind a small `CacheBackend` protocol, `db` default — Redis was planned as an explicit opt-in upgrade path (multi-instance cache sharing, multi-instance rate-limit storage), never required for a normal self-host. *As built:* only `memory` and `db` backends exist, sync uses `db` directly, and `CACHE_BACKEND` is ignored; Redis isn't implemented (see ADR 0003's implementation note).
+- **Rate limiting**: `slowapi` for inbound API protection; per-user asyncio locks prevent duplicate concurrent syncs. *As built:* one global limit of 120 requests/minute per client IP; the planned stricter limits on `/auth/*` and `/stars/sync`, and backing off on GitHub's rate-limit headers, aren't implemented (`httpx-retries` is a declared but unused dependency).
+- **Frontend**: React 19 + TypeScript + Vite, **TanStack Query** for server state (stars/tags/predicates — replaces most of the original's Vuex data-fetching role), **Zustand** for local UI state (selected sidebar view, modal open/closed, search query), **React Router v7** (data router, auth-guarded routes), **Tailwind CSS v4**, **shadcn/ui + Radix primitives** for accessible modals/dropdowns/toggles, **dnd-kit** for tag reorder + drag-star-onto-tag, **@tanstack/react-virtual** for the virtualized star list, **@uiw/react-codemirror** (CodeMirror 6) for the notes markdown editor, **lucide-react** icons, `markdown-it` + `dompurify` for note-preview rendering (GitHub already returns rendered HTML for READMEs — sanitize with `dompurify` before injecting). *As built:* Radix primitives are used directly (no shadcn/ui), and dnd-kit, `@tanstack/react-virtual`, CodeMirror and `markdown-it` weren't adopted. Notes are a plain textarea with no markdown preview, and `dompurify` sanitizes README HTML (see Known gaps).
 - **Packaging**: single multi-stage Dockerfile (Node build stage → Python/uv deps stage → slim runtime), FastAPI serves the built React SPA as static files plus `/api/v1/*` — one process, one port, no nginx-in-image (external reverse proxy is documented, same simple model as the original). Migrations run at **container start** via `entrypoint.sh` (`alembic upgrade head`), not at build time. Non-root container user.
-- **Hosting**: Docker self-host is primary (docker-compose: app + Postgres, optional Redis profile). PaaS: **Fly.io** primary recipe (first-class Postgres, persistent volumes, cheap small-VM pricing, trivial `fly deploy` from the GHCR image), **Railway** secondary/simpler-UX recipe. IaaS/VPS: same Docker recipe on a self-provisioned box, plus a documented non-Docker systemd + gunicorn/uvicorn + Caddy bare-metal path (explicitly requested by the user).
-- **CI/CD**: GitHub Actions — `backend-ci.yml` (ruff, mypy, pytest+coverage against a Postgres service container), `frontend-ci.yml` (eslint, `tsc --noEmit`, vitest+React Testing Library), `e2e.yml` (Playwright against the full docker-compose stack), `docker-publish.yml` (build+push to GHCR on tag/release), `codeql.yml`, Dependabot, pre-commit hooks (ruff, eslint --fix, basic hygiene).
+- **Hosting**: Docker self-host is primary (docker-compose: app + Postgres, optional Redis profile). PaaS: **Fly.io** primary recipe (first-class Postgres, persistent volumes, cheap small-VM pricing, trivial `fly deploy` from the GHCR image), **Railway** secondary/simpler-UX recipe, **Render** (added in `v0.2.0`) with a free tier suited to testing. IaaS/VPS: same Docker recipe on a self-provisioned box, plus a documented non-Docker systemd + gunicorn/uvicorn + Caddy bare-metal path (explicitly requested by the user).
+- **CI/CD**: GitHub Actions — `backend-ci.yml` (ruff, mypy, pytest+coverage against a Postgres service container), `frontend-ci.yml` (eslint, `tsc -b`, vitest+React Testing Library, production build), `e2e.yml` (Playwright against the full docker-compose stack), `docker-publish.yml` (build+push to GHCR when a release is published), `codeql.yml`, Dependabot, pre-commit hooks (ruff, eslint --fix, basic hygiene).
 
 ## Repo Layout
 
@@ -48,7 +48,7 @@ stellar/
 │   │   │                        # predicate_engine, crypto, cache/{memory,db,redis}.py
 │   │   ├── jobs/scheduler.py    # APScheduler registration
 │   │   └── core/                # security (sessions/CSRF), logging, rate_limit
-│   └── tests/{conftest.py, factories.py, api/, services/}
+│   └── tests/{conftest.py, test_config.py, test_spa_static.py, api/, services/}
 ├── frontend/
 │   ├── package.json, vite.config.ts, tsconfig.json
 │   ├── src/
@@ -69,13 +69,15 @@ stellar/
 ├── docker/{Dockerfile, docker-compose.yml, docker-compose.override.yml.example, entrypoint.sh}
 ├── docs/
 │   ├── plan.md                      # this plan, committed
-│   ├── adr/0001-record-architecture-decisions.md, 0002-postgres-only-v1.md,
-│   │        0003-apscheduler-over-celery.md, 0004-server-side-sessions.md, ...
+│   ├── adr/0001-record-architecture-decisions.md, 0002-postgres-primary-sqlite-best-effort.md,
+│   │        0003-apscheduler-no-redis-by-default.md, 0004-server-side-sessions-not-jwt.md,
+│   │        0005-single-user-no-multi-tenancy-v1.md
 │   ├── api-spec.md
-│   ├── deployment/{docker.md, fly-io.md, railway.md, vps-bare-metal.md}
+│   ├── deployment/{docker.md, fly-io.md, railway.md, render.md, vps-bare-metal.md}
 │   ├── development.md
 │   └── branding/ (logo source, palette, landing copy)
 ├── .env.example                       # single canonical env file
+├── railway.json, render.yaml          # PaaS build/deploy config (Railway, Render Blueprint)
 ├── .pre-commit-config.yaml
 ├── CONTRIBUTING.md, SECURITY.md, LICENSE, README.md
 ```
@@ -128,7 +130,7 @@ GitHub Actions workflows as listed under Recommended Stack. Hosting docs: `docs/
 
 ## Testing Strategy
 
-Backend: `pytest` + `pytest-asyncio` + `httpx.AsyncClient(ASGITransport)` against a real test Postgres (CI service container / `testcontainers` locally), `polyfactory` factories, `respx` to mock all GitHub HTTP calls (including pagination and rate-limit-header scenarios). Frontend: `vitest` + React Testing Library, heaviest coverage on predicate evaluation and search-filter logic. E2E: Playwright against the full compose stack. Currently landed: an API-health + landing-page smoke check (`frontend/tests/e2e/smoke.spec.ts`) — real GitHub OAuth can't be exercised headlessly without a live GitHub App and a throwaway account, so deeper authenticated flows (login, tag a star, build+apply a predicate, export, delete account) are aspirational until OAuth stubbing/mocking is designed; they're not yet implemented and would be a good next increment within Phase 5.
+Backend: `pytest` + `pytest-asyncio` + `httpx.AsyncClient(ASGITransport)`. *As built:* tests run against in-memory SQLite (`aiosqlite`, forced by `backend/tests/conftest.py`), not Postgres; CI exercises Postgres only through `alembic upgrade head`. The planned `polyfactory` factories and `respx` mocks of GitHub HTTP calls are declared dev dependencies but not used by any test yet. Frontend: `vitest` + React Testing Library, heaviest coverage on predicate evaluation and search-filter logic. E2E: Playwright against the full compose stack. Currently landed: an API-health + landing-page smoke check (`frontend/tests/e2e/smoke.spec.ts`) — real GitHub OAuth can't be exercised headlessly without a live GitHub App and a throwaway account, so deeper authenticated flows (login, tag a star, build+apply a predicate, export, delete account) are aspirational until OAuth stubbing/mocking is designed; they're not yet implemented and would be a good next increment within Phase 5.
 
 ## Migration/Parity Mapping (highlights)
 
@@ -149,11 +151,26 @@ Status key: ✅ done · 🚧 in progress · ⬜ not started.
 4. ✅ **Polish, Docs, Landing/Branding** — keyboard shortcuts (`/`, `j`/`k`, `t`, `Escape`), settings modal (export/revoke/delete wired), language facets, empty/loading states, landing page + branding applied, `docs/` filled out, accessibility pass (landmarks, `aria-hidden`/`aria-label`/`aria-live` sweep, contrast-checked palette, keyboard-navigable throughout).
 5. ✅ **Packaging, CI/CD, Release** — Dependabot already live and pruned (see repo PR history: merged the safe grouped/docker-runtime bumps, closed the ones with real breakage — a partial python3.14 docker bump with a mismatched builder stage, and react-dom/vite bumps with genuine peer-dep ERESOLVE conflicts). `e2e.yml` green end-to-end (commits `2b3bc9c`, `7d8b5a6`): fixed a `docker compose` `--env-file` bug that made the `db` service silently start with the wrong Postgres password, and added a real `frontend/playwright.config.ts` + `tests/e2e/smoke.spec.ts`. Default branch renamed to `main`, repo made public, `backend-ci`/`frontend-ci`/`e2e`/`codeql` all confirmed green (see CI/CD & Hosting above). Hosting validated with a real Railway deploy — Postgres, a real GitHub OAuth App, a full login round trip syncing 788 real starred repos; found and fixed a real bug along the way (`SPAStaticFiles` in `backend/app/main.py` — a full-page landing on a client-side route like `/dashboard`, e.g. straight off the OAuth callback redirect, 404'd instead of serving the SPA shell; would have hit every deployment target, not just Railway). `docker-publish.yml` verified: `v0.1.0` tagged and released, image built and pushed to `ghcr.io/oragnu/stellar` (tags `0.1.0`, `0.1`, `latest`), confirmed publicly pullable via an anonymous registry token. **`v0.1.0` is tagged and released.**
 
-**Known gaps, shipped in `v0.1.0` and tracked for follow-up** (each called out at the point they were deferred, not silently dropped): list virtualization (`@tanstack/react-virtual`) for tags/predicates/star list at large scale; drag-and-drop reorder for tags and saved filters (rename/delete/create work today, manual reordering doesn't); a richer CodeMirror-based notes editor (currently a plain textarea with debounced autosave); Fly.io and VPS/bare-metal hosting docs are written but not yet exercised against a real deploy the way Railway was.
+**`v0.2.0`** (November 2026) — maintenance and hosting release: Render recipe + `render.yaml` Blueprint (validated with a real free-tier deploy); `DATABASE_URL` accepts provider `postgres://`/`postgresql://` URLs; Python 3.14 in the Docker image and backend CI; React 19, Vite 8, Vitest 5, ESLint 10; all open Dependabot alerts resolved; `docker-publish.yml` now triggers only on `release: published`. Full notes on the GitHub release.
+
+**Known gaps, tracked for follow-up as of `v0.2.0`** (each called out at the point they were deferred, not silently dropped): list virtualization (`@tanstack/react-virtual`) for tags/predicates/star list at large scale; drag-and-drop reorder for tags and saved filters (rename/delete/create work today, manual reordering doesn't); a richer CodeMirror-based notes editor (currently a plain textarea with debounced autosave); Fly.io and VPS/bare-metal hosting docs are written but not yet exercised against a real deploy the way Railway and Render were. Found in the `v0.2.0` docs audit: the Redis cache/rate-limit option isn't implemented (ADR 0003 note); no per-endpoint rate limits or outbound GitHub backoff; no security-headers middleware; backend tests run on SQLite only (ADR 0002 note); API errors use FastAPI's `{"detail": ...}` shape while the frontend's API client expects `{"error": {...}}`, so it shows `[object Object]` instead of the server's message.
 
 ## Security Checklist
 
-Secrets never committed (`.env.example` placeholders + generation commands); GitHub token encrypted at rest (Fernet) with a documented rotation procedure; CSRF double-submit + `SameSite=Lax`; server-side revocable sessions (hash stored, not raw token); inbound rate limiting via slowapi (stricter on auth/sync) + outbound GitHub rate-limit-aware backoff with per-user locks; Dependabot + CodeQL + `pip-audit`/`npm audit` (non-blocking initially); secure headers middleware (CSP, X-Frame-Options, HSTS gated on production+secure-cookie); README/notes HTML sanitized both server-side (`bleach`/`nh3`) and client-side (`dompurify`); minimal default OAuth scope; tested full account-deletion cascade including GitHub grant revocation; non-root container user; SQLAlchemy parameterized queries only (no raw string-interpolated SQL), guarded by a pre-commit grep check.
+Status as of `v0.2.0`: ✅ = in place, ⬜ = planned, not yet built.
+
+- ✅ Secrets never committed (`.env.example` placeholders + generation commands)
+- ✅ GitHub token encrypted at rest (Fernet) · ⬜ documented key-rotation procedure (see `SECURITY.md`: changing `SECRET_ENCRYPTION_KEY` currently breaks stored tokens until users sign in again)
+- ✅ CSRF double-submit + `SameSite=Lax`
+- ✅ Server-side revocable sessions (hash stored, not raw token)
+- ✅ Inbound rate limiting via slowapi (global 120/min per IP) + per-user sync locks · ⬜ stricter limits on auth/sync · ⬜ outbound GitHub rate-limit-aware backoff
+- ✅ Dependabot + CodeQL · ⬜ `pip-audit`/`npm audit` in CI
+- ⬜ Secure-headers middleware (CSP, X-Frame-Options, HSTS) — set these at the reverse proxy for now
+- ✅ README HTML sanitized server-side (`bleach`) and client-side (`dompurify`); notes cleaned server-side with `bleach`
+- ✅ Minimal default OAuth scope (`read:user`)
+- ✅ Account deletion cascades and revokes the GitHub grant · ⬜ automated test covering it
+- ✅ Non-root container user
+- ✅ SQLAlchemy parameterized queries only · ⬜ pre-commit grep check guarding against raw SQL
 
 ## Critical Files for Implementation
 

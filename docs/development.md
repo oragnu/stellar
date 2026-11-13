@@ -3,7 +3,8 @@
 ## Prerequisites
 
 - Python 3.14 (3.11+ supported) and [`uv`](https://docs.astral.sh/uv/)
-- Node.js 22+ and npm
+- Node.js 22.22.2+ (or 24.15+ / 26+) and npm. jsdom 31, used by the unit
+  tests, sets that floor; Vite 8 and Vitest 5 need 22.12+.
 - PostgreSQL 16 (via Docker is easiest — see below — or a local install)
 - A [GitHub OAuth App](https://github.com/settings/developers) — set the
   callback URL to `http://localhost:8000/api/v1/auth/github/callback`
@@ -60,7 +61,7 @@ uv run mypy app
 cd frontend
 npm run test           # vitest — unit tests, tests/unit/
 npm run lint           # eslint
-npx tsc --noEmit
+npx tsc -b             # not --noEmit: see CONTRIBUTING.md
 
 # E2E (needs the full stack up first — see "Full stack via Docker" below)
 cd frontend

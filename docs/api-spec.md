@@ -14,14 +14,20 @@ This file is a stable, human-readable summary for quick reference; treat
 ## Conventions
 
 - JSON in, JSON out, `snake_case` field names on both sides.
-- List responses: `{"items": [...], "meta": {...}}`.
-- Errors: `{"error": {"code": "...", "message": "...", "details": {...}}}` with
-  the appropriate HTTP status (422 for validation, 401/403 for auth, 404,
-  409 for conflicts like duplicate tag names, 429 for rate limits).
+- List responses: `GET /stars` returns `{"items": [...], "meta": {...}}`;
+  `GET /tags` and `GET /predicates` return a plain JSON array.
+- Errors use FastAPI's default shape, `{"detail": "..."}` (for validation
+  errors, `detail` is a list of field errors), with the appropriate HTTP
+  status: 400 for bad requests, 401 when not signed in, 403 for a missing
+  or mismatched CSRF token, 404, 409 for conflicts like duplicate tag or
+  predicate names, and 422 for validation. The exception is 429 (more than
+  120 requests/minute per client IP), whose body comes from `slowapi`:
+  `{"error": "Rate limit exceeded: ..."}`.
 - All routes except `/auth/github/login`, `/auth/github/callback`, and
   `/health` require an authenticated session cookie.
 - All mutating routes (`POST`/`PATCH`/`PUT`/`DELETE`) require the
-  `X-CSRF-Token` header to match the `csrf_token` cookie.
+  `X-CSRF-Token` header to match the `stellar_csrf` cookie (name set by
+  `csrf_cookie_name` in `backend/app/config.py`).
 
 ## Resources
 
