@@ -42,6 +42,8 @@ jobs:
       SECRET_KEY: ci-test-secret-key
       SECRET_ENCRYPTION_KEY: ci-test-encryption-key
       SESSION_COOKIE_SECURE: "false"
+      # Keep in sync with PYTHON_VERSION in docker/Dockerfile.
+      UV_PYTHON: "3.14"
     steps:
       - uses: actions/checkout@v7
 
@@ -51,7 +53,7 @@ jobs:
           version: "latest"
 
       - name: Set up Python
-        run: uv python install 3.12
+        run: uv python install ${{ env.UV_PYTHON }}
 
       - name: Install dependencies
         run: uv sync --all-groups
