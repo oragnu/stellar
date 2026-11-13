@@ -1,9 +1,9 @@
 name: docker-publish
 
 on:
-  push:
-    tags:
-      - "v*"
+  # Publishing a release creates its tag, so a separate `push: tags` trigger
+  # would build and push the same image twice. See CONTRIBUTING.md
+  # § Cutting a release.
   release:
     types: [published]
 
