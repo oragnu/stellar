@@ -51,7 +51,7 @@ docker compose --env-file .env -f docker/docker-compose.yml up -d --build
 
 Visit `http://localhost:8000`. See [`docs/deployment/docker.md`](docs/deployment/docker.md)
 for reverse-proxy/TLS setup, and [`docs/deployment/`](docs/deployment/) for
-Fly.io, Railway, and bare-metal (no Docker) recipes.
+Fly.io, Railway, Render, and bare-metal (no Docker) recipes.
 
 ## Local development
 
@@ -61,7 +61,7 @@ See [`docs/development.md`](docs/development.md).
 
 - [`docs/plan.md`](docs/plan.md) — full architecture, data model, API design, roadmap
 - [`docs/adr/`](docs/adr/) — architecture decision records
-- [`docs/deployment/`](docs/deployment/) — hosting recipes (Docker, Fly.io, Railway, bare-metal)
+- [`docs/deployment/`](docs/deployment/) — hosting recipes (Docker, Fly.io, Railway, Render, bare-metal)
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) · [`SECURITY.md`](SECURITY.md)
 
 ## Why "Stellar"?

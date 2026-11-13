@@ -1,0 +1,51 @@
+# Render Blueprint: a web service built from docker/Dockerfile plus a
+# Render Postgres database. See docs/deployment/render.md for the full
+# walkthrough, including why DATABASE_URL has to be set by hand.
+#
+# Free plans are for testing only: the free database expires after 30 days.
+# Change both `plan:` values to paid plans for a long-lived deployment.
+services:
+  - type: web
+    name: stellar
+    runtime: docker
+    plan: free
+    dockerfilePath: ./docker/Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/v1/health
+    envVars:
+      # The container always listens on 8000 (docker/Dockerfile CMD).
+      - key: PORT
+        value: "8000"
+      # Trust Render's proxy headers so rate limiting sees real client IPs.
+      - key: FORWARDED_ALLOW_IPS
+        value: "*"
+      - key: APP_ENV
+        value: production
+      - key: SESSION_COOKIE_SECURE
+        value: "true"
+      - key: SECRET_KEY
+        generateValue: true
+      # The app derives its Fernet key from this string
+      # (backend/app/services/crypto.py), so any random value works.
+      # Never change it after first login: stored GitHub tokens would no
+      # longer decrypt.
+      - key: SECRET_ENCRYPTION_KEY
+        generateValue: true
+      # Render's connection string uses postgresql://, but the app needs
+      # postgresql+asyncpg://, so this can't use fromDatabase. Paste
+      # stellar-db's Internal Database URL with the scheme changed.
+      - key: DATABASE_URL
+        sync: false
+      # https://<service-name>.onrender.com, known after the first deploy.
+      - key: BASE_URL
+        sync: false
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+
+databases:
+  - name: stellar-db
+    plan: free
+    databaseName: stellar
+    user: stellar
