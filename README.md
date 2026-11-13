@@ -13,7 +13,7 @@ the full architecture, rationale, and roadmap.
 
 ## Status
 
-✅ **`v0.1.0` [released](https://github.com/oragnu/stellar/releases/tag/v0.1.0)**,
+✅ **`v0.2.0` [released](https://github.com/oragnu/stellar/releases/tag/v0.2.0)**,
 image published to [`ghcr.io/oragnu/stellar`](https://github.com/oragnu/stellar/pkgs/container/stellar).
 All 6 roadmap phases are done: auth + GitHub star sync, tags, notes,
 smart-filter ("predicate") builder, keyboard shortcuts, accessibility pass,
@@ -21,7 +21,8 @@ and packaging/CI/release. `backend-ci`, `frontend-ci`, `e2e`, and `codeql`
 are all green on `main`; hosting was validated with a real Railway deploy
 (Postgres, a real GitHub OAuth App, a full login round trip syncing 788
 real starred repos — see `docs/plan.md` § Phased Roadmap for what that
-found and fixed). Known gaps carried forward, none blocking: list
+found and fixed) and, for `v0.2.0`, a real free-tier Render deploy from
+the `render.yaml` Blueprint. Known gaps carried forward, none blocking: list
 virtualization for very large star accounts, drag-and-drop reorder for
 tags/filters, a richer notes editor, and Fly.io/VPS recipes not yet
 exercised against a real deploy the way Railway was (full detail in
@@ -32,7 +33,7 @@ exercised against a real deploy the way Railway was (full detail in
 | Layer | Choice |
 |---|---|
 | Backend | Python 3.14, FastAPI, SQLAlchemy 2.0 (async), Alembic, PostgreSQL |
-| Frontend | React 18 + TypeScript, Vite, TanStack Query, Zustand, Tailwind CSS v4 |
+| Frontend | React 19 + TypeScript, Vite, TanStack Query, Zustand, Tailwind CSS v4 |
 | Auth | GitHub OAuth only, server-side sessions |
 | Background jobs | APScheduler (in-process, no Redis required) |
 | Packaging | Single multi-stage Docker image; also documented for bare-metal |

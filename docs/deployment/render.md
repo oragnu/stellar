@@ -11,11 +11,9 @@ running it long term: the free database is deleted after 30 days (see
 you intend to keep, use paid plans for both the web service and the
 database. The setup steps are identical, only the `plan` values change.
 
-> **Not yet validated against a real deploy.** This recipe was written
-> from Render's documentation and the app's requirements, the same way the
-> Fly.io and bare-metal recipes were. Railway is still the only target
-> exercised end to end. Update this note (and `docs/plan.md`) once a real
-> Render deploy has been run.
+> **Validated against a real deploy** (November 2026, for `v0.2.0`): the
+> Blueprint below, on Render's free tier, with the steps exactly as
+> written.
 
 ## Option A: Blueprint (recommended)
 
