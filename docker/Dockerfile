@@ -10,6 +10,12 @@
 # packaging notes in docs/plan.md for why the original app's fork got this
 # wrong.
 
+# Single source of truth for the Python version. Both the build stage (uv
+# image) and the runtime stage must match: the venv and its compiled wheels
+# are tied to the interpreter they were built for. Keep in sync with
+# .github/workflows/backend-ci.yml.
+ARG PYTHON_VERSION=3.14
+
 FROM node:26-slim AS frontend-build
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json* ./
@@ -17,12 +23,12 @@ RUN npm ci
 COPY frontend/ ./
 RUN npm run build
 
-FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS python-deps
+FROM ghcr.io/astral-sh/uv:python${PYTHON_VERSION}-bookworm-slim AS python-deps
 WORKDIR /app/backend
 COPY backend/pyproject.toml backend/uv.lock ./
 RUN uv sync --frozen --no-dev --no-install-project
 
-FROM python:3.12-slim-bookworm AS runtime
+FROM python:${PYTHON_VERSION}-slim-bookworm AS runtime
 RUN useradd --create-home --uid 1000 stellar
 WORKDIR /app
 

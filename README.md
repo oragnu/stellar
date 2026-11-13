@@ -31,7 +31,7 @@ exercised against a real deploy the way Railway was (full detail in
 
 | Layer | Choice |
 |---|---|
-| Backend | Python 3.12, FastAPI, SQLAlchemy 2.0 (async), Alembic, PostgreSQL |
+| Backend | Python 3.14, FastAPI, SQLAlchemy 2.0 (async), Alembic, PostgreSQL |
 | Frontend | React 18 + TypeScript, Vite, TanStack Query, Zustand, Tailwind CSS v4 |
 | Auth | GitHub OAuth only, server-side sessions |
 | Background jobs | APScheduler (in-process, no Redis required) |
