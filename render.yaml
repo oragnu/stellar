@@ -1,6 +1,6 @@
 # Render Blueprint: a web service built from docker/Dockerfile plus a
 # Render Postgres database. See docs/deployment/render.md for the full
-# walkthrough, including why DATABASE_URL has to be set by hand.
+# walkthrough.
 #
 # Free plans are for testing only: the free database expires after 30 days.
 # Change both `plan:` values to paid plans for a long-lived deployment.
@@ -31,11 +31,12 @@ services:
       # longer decrypt.
       - key: SECRET_ENCRYPTION_KEY
         generateValue: true
-      # Render's connection string uses postgresql://, but the app needs
-      # postgresql+asyncpg://, so this can't use fromDatabase. Paste
-      # stellar-db's Internal Database URL with the scheme changed.
+      # Render's internal postgresql:// URL; the app rewrites it to
+      # postgresql+asyncpg:// on startup (backend/app/config.py).
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: stellar-db
+          property: connectionString
       # https://<service-name>.onrender.com, known after the first deploy.
       - key: BASE_URL
         sync: false
