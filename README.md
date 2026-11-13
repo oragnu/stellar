@@ -24,8 +24,10 @@ real starred repos — see `docs/plan.md` § Phased Roadmap for what that
 found and fixed) and, for `v0.2.0`, a real free-tier Render deploy from
 the `render.yaml` Blueprint. Known gaps carried forward, none blocking: list
 virtualization for very large star accounts, drag-and-drop reorder for
-tags/filters, a richer notes editor, and Fly.io/VPS recipes not yet
-exercised against a real deploy the way Railway was (full detail in
+tags/filters, a richer notes editor, Fly.io/VPS recipes not yet
+exercised against a real deploy the way Railway and Render were, and a few
+not-yet-built hardening items (security headers, per-endpoint rate limits,
+the Redis option) found in the `v0.2.0` docs audit (full detail in
 `docs/plan.md` § Phased Roadmap).
 
 ## Stack

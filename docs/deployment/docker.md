@@ -65,6 +65,17 @@ Nginx Proxy Manager configs just need to forward to `localhost:8000` (or the
 `app` service on the Docker network, if your proxy is itself containerized
 and attached to the same network).
 
+Two things to check with a proxy in front:
+
+- **Real client IPs.** Requests reach the container from Docker's network,
+  not from `127.0.0.1`, so by default the app ignores the proxy's
+  `X-Forwarded-For` header and rate-limits every visitor as one client.
+  Set `FORWARDED_ALLOW_IPS=*` in `.env` to trust the proxy's headers.
+- **Port 8000 is published on all interfaces** (`ports: "8000:8000"`). With
+  `FORWARDED_ALLOW_IPS=*`, anyone who can reach port 8000 directly can
+  spoof their IP. Firewall the port, or change the mapping to
+  `"127.0.0.1:8000:8000"` so only the local proxy can reach it.
+
 ## 5. Updating
 
 ```bash
@@ -98,13 +109,19 @@ rotating old backups as you see fit. (A fully managed backup story is not
 built into Stellar itself — this is intentionally left to your existing
 infra, same as most self-hosted apps.)
 
-## 7. Optional: Redis
+## 7. Redis (not supported yet)
 
-Stellar does not require Redis. If you're running multiple app replicas and
-want a shared star-cache / rate-limit store, uncomment the `redis` service
-in `docker/docker-compose.yml` (under the `redis` Compose profile) and set
-`CACHE_BACKEND=redis` / `RATE_LIMIT_STORAGE_URI=redis://redis:6379/0` in
-`.env`.
+Stellar doesn't use Redis. `docker/docker-compose.yml` has a `redis`
+service under an opt-in `redis` profile, but the app can't use it yet:
+
+- **Star cache:** always stored in Postgres. `CACHE_BACKEND` is currently
+  ignored, and there's no Redis cache backend.
+- **Rate limits:** the Redis client library isn't installed, so setting
+  `RATE_LIMIT_STORAGE_URI=redis://…` stops the app from starting
+  (`ConfigurationError: 'redis' prerequisite not available`). Leave it at
+  the default `memory://`.
+
+Run a single app instance (see `docs/adr/0003-apscheduler-no-redis-by-default.md`).
 
 ## Troubleshooting
 

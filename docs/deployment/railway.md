@@ -51,10 +51,13 @@ Railway dashboard.
      fails its healthcheck and gets rolled back even though the container
      is actually running and healthy — the container logs show a normal
      startup with no error, which makes this one easy to misdiagnose as an
-     app bug. The app itself always listens on 8000 (`docker/entrypoint.sh`
-     hardcodes `--bind 0.0.0.0:8000`, same as every other deployment
+     app bug. The app itself always listens on 8000 (`docker/Dockerfile`'s
+     `CMD` hardcodes `--bind 0.0.0.0:8000`, same as every other deployment
      target); this variable only tells Railway's proxy/healthchecker where
      to find it.
+   - `FORWARDED_ALLOW_IPS=*` — lets the app trust Railway's proxy headers,
+     so rate limiting (120 requests/minute) applies per real client IP
+     instead of to every visitor as one.
 5. Generate a public domain for the service (**Settings → Networking →
    Generate Domain**), then set its **target port to 8000** — same
    reasoning as the `PORT` variable above; the CLI equivalent is

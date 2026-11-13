@@ -53,9 +53,9 @@ services:
       retries: 10
     restart: unless-stopped
 
-  # Optional, off by default — see docs/adr/0003-apscheduler-no-redis-by-default.md.
-  # Enable with: docker compose --profile redis up -d
-  # and set CACHE_BACKEND=redis / RATE_LIMIT_STORAGE_URI=redis://redis:6379/0 in .env.
+  # Placeholder for future Redis support — the app can't use it yet (no
+  # Redis cache backend; Redis client not installed). Don't enable it or
+  # point RATE_LIMIT_STORAGE_URI at it. See docs/deployment/docker.md § Redis.
   redis:
     image: redis:7-alpine
     profiles: ["redis"]

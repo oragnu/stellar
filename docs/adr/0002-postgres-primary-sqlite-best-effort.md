@@ -43,3 +43,11 @@ the original's SQLite default. In exchange, we get one well-tested code
 path, real JSONB for future predicate-querying performance, and no
 migration-portability risk. If demand for a true zero-dependency SQLite mode
 turns out to be strong, revisit with a superseding ADR.
+
+## Implementation note (v0.2.0)
+In practice the backend test suite (`pytest`) runs against in-memory SQLite
+via `aiosqlite` (see `backend/tests/conftest.py`), not Postgres. CI covers
+Postgres only by running `alembic upgrade head` against a Postgres service
+container. The decision above, Postgres as the only supported production
+database, is unchanged, but its "CI-tested" claim currently covers
+migrations, not the test suite.

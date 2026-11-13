@@ -44,8 +44,13 @@ fly secrets set \
   GITHUB_CLIENT_ID=... \
   GITHUB_CLIENT_SECRET=... \
   BASE_URL=https://<your-app-name>.fly.dev \
-  SESSION_COOKIE_SECURE=true
+  SESSION_COOKIE_SECURE=true \
+  FORWARDED_ALLOW_IPS='*'
 ```
+
+`FORWARDED_ALLOW_IPS='*'` lets the app trust Fly's proxy headers, so rate
+limiting (120 requests/minute) applies per real client IP instead of to
+every visitor as one.
 
 ## 5. Deploy
 

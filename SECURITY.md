@@ -33,9 +33,21 @@ A few things worth knowing if you're auditing or self-hosting Stellar:
   read your starred repositories. It does not request write/`repo` scope
   unless a future feature (e.g. private-repo starring) explicitly requires
   it and you re-consent.
-- **Rate limiting**: inbound API rate limiting (stricter on auth/sync
-  endpoints) and outbound GitHub API rate-limit-aware backoff.
-- **Dependencies**: scanned via Dependabot and CodeQL on every push; please
+- **Rate limiting**: inbound API requests are limited to 120/minute per
+  client IP (`slowapi`, in-memory). There are no stricter per-endpoint
+  limits yet, and outbound GitHub API calls don't back off on GitHub's
+  rate-limit responses. Concurrent star syncs for the same user are
+  serialized by a per-user lock. Behind a reverse proxy, set
+  `FORWARDED_ALLOW_IPS` (see `.env.example`) so the limit applies per real
+  client rather than to the proxy's IP.
+- **HTTP security headers**: the app doesn't set CSP, `X-Frame-Options` or
+  HSTS headers itself. Add them at your reverse proxy if you need them.
+- **HTML sanitization**: notes are cleaned server-side with `bleach`;
+  GitHub-rendered README HTML is sanitized server-side with `bleach` and
+  again client-side with DOMPurify before rendering.
+- **Dependencies**: Dependabot checks weekly and opens security-update PRs
+  as advisories appear; CodeQL runs on every push and PR to `main` plus
+  weekly. Please
   don't rely solely on this — pin and review dependency updates for
   security-sensitive services (`services/crypto.py`, `services/github_client.py`,
   `core/security.py`) with extra care.
@@ -46,9 +58,13 @@ When deploying Stellar yourself:
 
 - Generate a unique `SECRET_KEY` and `SECRET_ENCRYPTION_KEY` per instance
   (see `.env.example` for generation commands) — never reuse the examples.
-- Keep `.env` / `.env.docker` out of version control (already covered by
-  `.gitignore`).
+- Keep `.env` out of version control (already covered by `.gitignore`).
 - Run behind TLS (see `docs/deployment/`) — session cookies are marked
   `Secure` in production and will not be sent over plain HTTP.
 - Rotate your GitHub OAuth app's client secret if you suspect it leaked, and
   update `GITHUB_CLIENT_SECRET` accordingly.
+- Treat `SECRET_ENCRYPTION_KEY` as permanent. There's no key-rotation
+  tooling yet: changing it makes every stored GitHub token undecryptable.
+  Existing sessions stay valid, but star syncs and README fetches fail with
+  server errors until each user signs out and back in, which stores their
+  token again under the new key.

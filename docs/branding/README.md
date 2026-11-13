@@ -26,15 +26,19 @@ lineage is recognizable.
 | `--color-border` | `#262B52` | Hairlines, dividers |
 | `--color-danger` | `#F0596B` | Destructive actions |
 
-Full light-mode tokens (for the eventual dark/light toggle noted as a cheap
-future add in `docs/plan.md`) are defined alongside these in
-`frontend/src/index.css`.
+These are defined in the `@theme` block of `frontend/src/index.css`, along
+with a few extra shades (`--color-bg-elevated-2`, `--color-accent-hover`).
+The app ships dark only; no light-mode tokens exist yet. Adding light mode
+(a cheap future add per `docs/plan.md`) means defining a second set of
+values for the same token names.
 
 ## Typography
 
-- UI + body: **Inter** (variable font), loaded self-hosted (no external
-  font CDN — keeps the app fully self-contained for offline/self-hosted
-  deployments).
+- UI + body: **Inter**, named first in the `--font-sans` stack. No font
+  files are bundled and no font CDN is used (keeping the app self-contained),
+  so Inter is used only where the viewer has it installed; otherwise the
+  system UI font applies. Bundling Inter under `frontend/public/` would make
+  it consistent everywhere.
 - Landing hero display text: Inter at heavier weights (700–800) — no second
   display typeface introduced, to keep the type system simple.
 
@@ -43,8 +47,8 @@ future add in `docs/plan.md`) are defined alongside these in
 A minimal constellation mark: three connected points forming a stylized
 shooting star / "S" gesture, used as both the standalone mark (favicon, app
 icon) and paired with the "Stellar" wordmark (Inter, 700 weight) for the
-full lockup. See `frontend/public/` for the SVG source and generated
-favicons.
+full lockup. The mark ships as `frontend/public/favicon.svg`; no raster
+favicons or app icons are generated yet.
 
 ## Voice
 

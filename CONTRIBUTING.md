@@ -26,7 +26,7 @@ npm run dev
 ## Before opening a PR
 
 - Run `uv run ruff check . && uv run ruff format --check .` and `uv run mypy app` in `backend/`.
-- Run `npm run lint && npx tsc --noEmit` in `frontend/`.
+- Run `npm run lint && npx tsc -b` in `frontend/`. (Use `tsc -b`, not `tsc --noEmit`: the root `tsconfig.json` only references `tsconfig.app.json` and `tsconfig.node.json`, so `--noEmit` against it type-checks nothing. `tsc -b` is also what `frontend-ci` and `npm run build` run.)
 - Run the relevant test suite (`uv run pytest` / `npm run test`) for anything you touched.
 - Keep PRs scoped to one phase/feature from `docs/plan.md` where possible — it makes review much easier.
 - If you're changing an architectural decision (framework, data model, auth model, packaging), add or update an ADR in `docs/adr/`.
@@ -55,9 +55,11 @@ with the diff, or ask for review in the PR before merging.
 
 ## Cutting a release
 
-Releases go out as a **draft first, published deliberately** — a draft
+Releases go out as a **draft first, published deliberately**. A draft
 release doesn't create its git tag or fire `docker-publish.yml` until it's
-actually published, so nothing goes out to GHCR by accident:
+actually published, so nothing goes out to GHCR by accident.
+`docker-publish.yml` runs only on `release: published`, so pushing a `v*`
+tag by hand doesn't publish an image either.
 
 ```bash
 gh release create vX.Y.Z --draft --notes-file notes.md   # no tag yet, nothing public
@@ -66,15 +68,25 @@ gh release edit vX.Y.Z --draft=false                      # tag is created now;
                                                             # this is what triggers docker-publish.yml
 ```
 
-Bump `version` in both `backend/pyproject.toml` and `frontend/package.json`
-to match before tagging — `docker-publish.yml` doesn't check this for you.
+Before cutting the release, land a PR that bumps the version in both
+packages and their lockfiles; `docker-publish.yml` doesn't check this for
+you:
+
+```bash
+cd frontend && npm version X.Y.Z --no-git-tag-version   # package.json + package-lock.json
+cd ../backend && uv lock                                # after editing version in pyproject.toml
+```
+
+If your local `uv` is older than the one that last wrote `uv.lock`, `uv lock`
+may also rewrite the `revision = …` line near the top; keep the existing
+value so the diff is only the version.
 
 ## Code style
 
 - **Python**: `ruff` for linting + formatting, `mypy` for types, SQLAlchemy 2.0
   `Mapped[]`/`mapped_column()` style, Pydantic v2 schemas kept separate from
   ORM models.
-- **TypeScript/React**: `eslint` + `tsc --noEmit`, functional components +
+- **TypeScript/React**: `eslint` + `tsc -b`, functional components +
   hooks, TanStack Query for server state, Zustand for local UI state only —
   don't reach for global state for anything the API already owns.
 

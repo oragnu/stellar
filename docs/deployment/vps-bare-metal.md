@@ -44,7 +44,8 @@ uv run alembic upgrade head
 # Frontend (build once; output gets served as static files by the backend)
 cd ../frontend
 npm ci
-npm run build   # outputs to frontend/dist — copy or symlink into where app.main expects static files
+npm run build   # outputs to frontend/dist
+ln -sfn /opt/stellar/frontend/dist /opt/stellar/backend/static   # the backend serves the SPA from backend/static
 ```
 
 ### 4. systemd unit

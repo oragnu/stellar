@@ -40,3 +40,12 @@ Stellar is ever horizontally scaled, jobs would double-fire unless one
 replica disables its scheduler (`SCHEDULER_ENABLED=false`) or the project
 migrates to `arq`+Redis at that point. This is an accepted, documented
 limitation matched to the target audience (self-hosters, not a scaled SaaS).
+
+## Implementation note (v0.2.0)
+The Redis upgrade path described above isn't built yet. Only `memory` and
+`db` cache backends exist (`backend/app/services/cache/`), sync code uses
+the `db` backend directly, and the `CACHE_BACKEND` setting is currently
+ignored. The Redis client library isn't installed either, so a
+`redis://` `RATE_LIMIT_STORAGE_URI` stops the app from starting; it must
+stay at `memory://`. Single-instance
+deployment is therefore a hard requirement for now, not just a default.
