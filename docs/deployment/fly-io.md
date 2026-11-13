@@ -30,10 +30,10 @@ fly postgres create --name stellar-db
 fly postgres attach stellar-db -a <your-app-name>
 ```
 
-`fly postgres attach` injects a `DATABASE_URL` secret automatically — make
-sure it uses the `postgresql+asyncpg://` scheme Stellar expects (Fly's
-default is `postgres://`; update the secret if needed:
-`fly secrets set DATABASE_URL=postgresql+asyncpg://...`).
+`fly postgres attach` injects a `DATABASE_URL` secret automatically. Fly's
+URL uses the `postgres://` scheme; Stellar rewrites `postgres://` and
+`postgresql://` to `postgresql+asyncpg://` on startup
+(`backend/app/config.py`), so it works as-is.
 
 ## 4. Set secrets
 

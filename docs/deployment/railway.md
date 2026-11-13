@@ -31,13 +31,15 @@ Railway dashboard.
    setting to change. If you're deploying a fork with a different layout,
    the file's `build.dockerfilePath` is the one setting that matters.
 4. In the Stellar service's **Variables**, set:
-   - `DATABASE_URL` — reference the Postgres plugin's individual vars and
-     rewrite the scheme to `postgresql+asyncpg://` (Railway's own
-     `DATABASE_URL` reference defaults to plain `postgresql://`, which
-     `asyncpg` will reject):
+   - `DATABASE_URL` — reference the Postgres plugin's URL:
      ```
-     postgresql+asyncpg://${{Postgres.PGUSER}}:${{Postgres.PGPASSWORD}}@${{Postgres.PGHOST}}:${{Postgres.PGPORT}}/${{Postgres.PGDATABASE}}
+     ${{Postgres.DATABASE_URL}}
      ```
+     Railway's URL uses plain `postgresql://`; Stellar rewrites it to
+     `postgresql+asyncpg://` on startup (`backend/app/config.py`). The
+     longer form built from `PGUSER`/`PGPASSWORD`/`PGHOST`/`PGPORT`/
+     `PGDATABASE` with an explicit `postgresql+asyncpg://` scheme, used
+     for the original validated deploy, still works too.
    - `SECRET_KEY` (generate: `openssl rand -hex 32`)
    - `SECRET_ENCRYPTION_KEY` (generate: `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`)
    - `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` — see step 6 below for the

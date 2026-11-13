@@ -8,7 +8,7 @@ with generation instructions for the secret values.
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -28,6 +28,22 @@ class Settings(BaseSettings):
     # --- Database ---
     database_url: str = "postgresql+asyncpg://stellar:stellar@localhost:5432/stellar"
     db_echo: bool = False
+
+    @field_validator("database_url")
+    @classmethod
+    def _use_asyncpg_driver(cls, value: str) -> str:
+        """Rewrite driver-less Postgres URLs to use asyncpg.
+
+        Hosting platforms (Render, Fly.io, Railway, Heroku-style add-ons)
+        hand out `postgres://` or `postgresql://` connection strings, which
+        SQLAlchemy maps to psycopg2 — not installed here, so startup would
+        fail. URLs that already name a driver (`postgresql+asyncpg://`,
+        `sqlite+aiosqlite://`, ...) are left untouched.
+        """
+        for scheme in ("postgres://", "postgresql://"):
+            if value.startswith(scheme):
+                return "postgresql+asyncpg://" + value[len(scheme) :]
+        return value
 
     # --- GitHub OAuth ---
     github_client_id: str = ""
