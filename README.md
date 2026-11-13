@@ -13,7 +13,7 @@ the full architecture, rationale, and roadmap.
 
 ## Status
 
-✅ **`v0.2.0` [released](https://github.com/oragnu/stellar/releases/tag/v0.2.0)**,
+✅ **`v0.2.1` [released](https://github.com/oragnu/stellar/releases/tag/v0.2.1)**,
 image published to [`ghcr.io/oragnu/stellar`](https://github.com/oragnu/stellar/pkgs/container/stellar).
 All 6 roadmap phases are done: auth + GitHub star sync, tags, notes,
 smart-filter ("predicate") builder, keyboard shortcuts, accessibility pass,
