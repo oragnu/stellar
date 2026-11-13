@@ -20,6 +20,59 @@ export class ApiError extends Error {
   }
 }
 
+type ParsedError = { message: string; code?: string; details?: unknown };
+
+/**
+ * Pull a human-readable message out of an error response body. The backend
+ * emits several shapes (see docs/api-spec.md § Conventions):
+ * - FastAPI HTTPException: `{"detail": "Tag not found"}`
+ * - FastAPI validation (422): `{"detail": [{"loc": [...], "msg": "...", ...}]}`
+ * - slowapi rate limit (429): `{"error": "Rate limit exceeded: 120 per 1 minute"}`
+ * - structured envelope: `{"error": {"code", "message", "details"}}`
+ * Anything else (proxy HTML pages, empty bodies) falls back to a generic
+ * message rather than stringifying the body.
+ */
+function parseErrorBody(payload: unknown, status: number): ParsedError {
+  const fallback = { message: `Request failed (HTTP ${status})` };
+
+  if (typeof payload === "string") {
+    const text = payload.trim();
+    // Short plain-text bodies are meaningful; HTML error pages are not.
+    return text && text.length <= 200 && !text.startsWith("<") ? { message: text } : fallback;
+  }
+  if (!payload || typeof payload !== "object") return fallback;
+
+  const body = payload as Record<string, unknown>;
+
+  if (typeof body.error === "string") return { message: body.error };
+  if (body.error && typeof body.error === "object") {
+    const err = body.error as Record<string, unknown>;
+    return {
+      message: typeof err.message === "string" && err.message ? err.message : fallback.message,
+      code: typeof err.code === "string" ? err.code : undefined,
+      details: err.details,
+    };
+  }
+
+  if (typeof body.detail === "string" && body.detail) return { message: body.detail };
+  if (Array.isArray(body.detail)) {
+    const messages = body.detail
+      .map((item) =>
+        item && typeof item === "object" && typeof (item as { msg?: unknown }).msg === "string"
+          ? (item as { msg: string }).msg
+          : null,
+      )
+      .filter((msg): msg is string => Boolean(msg));
+    return {
+      message: messages.length ? messages.join("; ") : fallback.message,
+      code: "validation_error",
+      details: body.detail,
+    };
+  }
+
+  return fallback;
+}
+
 function readCookie(name: string): string | null {
   const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
   return match ? decodeURIComponent(match[1]) : null;
@@ -52,8 +105,8 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
   const payload = isJson ? await response.json() : await response.text();
 
   if (!response.ok) {
-    const error = isJson && payload?.error ? payload.error : { message: String(payload) };
-    throw new ApiError(response.status, error.message ?? "Request failed", error.code, error.details);
+    const error = parseErrorBody(payload, response.status);
+    throw new ApiError(response.status, error.message, error.code, error.details);
   }
 
   return payload as T;
